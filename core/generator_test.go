@@ -546,6 +546,293 @@ func TestEndToEnd_CrossTest(t *testing.T) {
 	}
 }
 
+func TestMatrixBlock_NestedMatrix(t *testing.T) {
+	// Recursive matrix: outer matrix with merged-cell headers, inner ordinary matrix.
+	// Single data view "sales_data" with 5 columns: region, product, metric, period, amount.
+	//
+	// Template layout:
+	//      A       B       C       D
+	// 1                   {product}          ← C1:D1 merged, outer HAxis (horizontal)
+	// 2                   {period}           ← inner HAxis at D2 (corner C2 empty)
+	// 3   {region}        {metric} {amount}  ← A3:B3 merged, outer VAxis (vertical, InsertAfter)
+	//     (merged A3:B3)   inner VAxis C3, inner Values D3
+	//
+	// After expansion (2 regions × 2 products):
+	//      A       B       C       D       E       F
+	// 1                   Alpha            Beta
+	// 2                            Q1               Q1
+	// 3   East            Revenue  100     Revenue  200
+	// 4   West            Revenue  300     Revenue  400
+
+	f := excelize.NewFile()
+	sheet := "Sheet1"
+	idx, _ := f.GetSheetIndex("Sheet1")
+	if idx == -1 {
+		f.NewSheet(sheet)
+	}
+
+	// Outer HAxis template (merged C1:D1)
+	f.SetCellValue(sheet, "C1", "{product}")
+	if err := f.MergeCell(sheet, "C1", "D1"); err != nil {
+		t.Fatalf("Failed to merge C1:D1: %v", err)
+	}
+
+	// Outer VAxis template (merged A2:B2)
+	f.SetCellValue(sheet, "A2", "{region}")
+	if err := f.MergeCell(sheet, "A2", "B2"); err != nil {
+		t.Fatalf("Failed to merge A2:B2: %v", err)
+	}
+
+	// Inner matrix template cells (C2:D2)
+	f.SetCellValue(sheet, "D1", "{period}") // inner HAxis (Note: D1 is within outer HAxis merge, but inner HAxis template is at D1 position)
+	// Actually inner HAxis is at D1 within inner matrix range... let me reconsider.
+
+	// Wait, let me reconsider the layout. The inner matrix must be in the "data area"
+	// which is the intersection of outer VAxis rows and outer HAxis cols.
+	// Outer VAxis: A2:B2 (row 2), Outer HAxis: C1:D1 (row 1, cols C-D)
+	// So data area = C2:D2 (row 2, cols C-D)
+	// Inner matrix at C2:D2 is only 1 row × 2 cols — too small for 2 headers + 1 value.
+
+	// Let me use a 2-row layout instead:
+	// Outer VAxis: A3:B4 merged (2 rows × 2 cols)
+	// Outer HAxis: C1:D2 merged (2 rows × 2 cols)
+	// Inner matrix: C3:D4 (2 rows × 2 cols)
+	//   Corner: C3
+	//   Inner HAxis: D3 ({period})
+	//   Inner VAxis: C4 ({metric})
+	//   Inner Values: D4 ({amount})
+
+	// Reset and redo
+	f = excelize.NewFile()
+	idx, _ = f.GetSheetIndex("Sheet1")
+	if idx == -1 {
+		f.NewSheet(sheet)
+	}
+
+	// Outer HAxis template: C1:D2 merged
+	f.SetCellValue(sheet, "C1", "{product}")
+	if err := f.MergeCell(sheet, "C1", "D2"); err != nil {
+		t.Fatalf("Failed to merge C1:D2: %v", err)
+	}
+
+	// Outer VAxis template: A3:B4 merged
+	f.SetCellValue(sheet, "A3", "{region}")
+	if err := f.MergeCell(sheet, "A3", "B4"); err != nil {
+		t.Fatalf("Failed to merge A3:B4: %v", err)
+	}
+
+	// Inner matrix template cells at C3:D4
+	// C3 = corner (empty)
+	f.SetCellValue(sheet, "D3", "{period}")  // inner HAxis
+	f.SetCellValue(sheet, "C4", "{metric}")  // inner VAxis
+	f.SetCellValue(sheet, "D4", "{amount}")  // inner Values
+
+	// All blocks reference the same data view
+	dvName := "sales_data"
+
+	outerVAxis := config.BlockConfig{
+		Name:          "OuterRows",
+		Type:          config.BlockTypeHeader,
+		Direction:     config.DirectionVertical,
+		Range:         config.CellRange{Ref: "A3:B4"},
+		DataViewName:  dvName,
+		LabelVariable: "region",
+		InsertAfter:   true,
+	}
+
+	outerHAxis := config.BlockConfig{
+		Name:          "OuterCols",
+		Type:          config.BlockTypeHeader,
+		Direction:     config.DirectionHorizontal,
+		Range:         config.CellRange{Ref: "C1:D2"},
+		DataViewName:  dvName,
+		LabelVariable: "product",
+	}
+
+	innerMatrix := config.BlockConfig{
+		Name:  "InnerMatrix",
+		Type:  config.BlockTypeMatrix,
+		Range: config.CellRange{Ref: "C3:D4"},
+		SubBlocks: []config.BlockConfig{
+			{
+				Name:          "InnerRows",
+				Type:          config.BlockTypeHeader,
+				Direction:     config.DirectionVertical,
+				Range:         config.CellRange{Ref: "C4:C4"},
+				DataViewName:  dvName,
+				LabelVariable: "metric",
+			},
+			{
+				Name:          "InnerCols",
+				Type:          config.BlockTypeHeader,
+				Direction:     config.DirectionHorizontal,
+				Range:         config.CellRange{Ref: "D3:D3"},
+				DataViewName:  dvName,
+				LabelVariable: "period",
+			},
+			{
+				Name:         "InnerValues",
+				Type:         config.BlockTypeValue,
+				Range:        config.CellRange{Ref: "D4:D4"},
+				DataViewName: dvName,
+				RowLimit:     1,
+			},
+		},
+	}
+
+	matrixBlock := config.BlockConfig{
+		Name:      "OuterMatrix",
+		Type:      config.BlockTypeMatrix,
+		Range:     config.CellRange{Ref: "A1:D4"},
+		SubBlocks: []config.BlockConfig{outerVAxis, outerHAxis, innerMatrix},
+	}
+
+	wbConfig := &config.WorkbookConfig{
+		Sheets: []config.SheetConfig{
+			{Name: "Sheet1", Blocks: []config.BlockConfig{matrixBlock}},
+		},
+	}
+
+	// Single data view with 5 columns
+	views := map[string]*config.DataViewConfig{
+		dvName: {
+			Name: dvName,
+			Labels: []config.LabelConfig{
+				{Name: "region", Column: "region"},
+				{Name: "product", Column: "product"},
+				{Name: "metric", Column: "metric"},
+				{Name: "period", Column: "period"},
+				{Name: "amount", Column: "amount"},
+			},
+		},
+	}
+
+	// All data in one view — headers use distinct, values use filtered rows
+	mockData := map[string][]map[string]interface{}{
+		dvName: {
+			{"region": "East", "product": "Alpha", "metric": "Revenue", "period": "Q1", "amount": 100},
+			{"region": "East", "product": "Beta", "metric": "Revenue", "period": "Q1", "amount": 200},
+			{"region": "West", "product": "Alpha", "metric": "Revenue", "period": "Q1", "amount": 300},
+			{"region": "West", "product": "Beta", "metric": "Revenue", "period": "Q1", "amount": 400},
+		},
+	}
+
+	fetcher := &MockFetcher{Data: mockData}
+	provider := config.NewMemoryConfigRegistry(views, nil)
+	ctx := NewGenerationContext(wbConfig, provider, fetcher, nil)
+	gen := NewGenerator(ctx)
+	adapter := &ExcelizeFile{file: f}
+
+	if err := gen.processBlock(adapter, sheet, &matrixBlock); err != nil {
+		t.Fatalf("processBlock failed: %v", err)
+	}
+
+	saveTestFile(t, f, "nested_matrix.xlsx")
+
+	// Expected layout after expansion (2 regions × 2 products):
+	//      A       B       C        D        E        F
+	// 1                   Alpha             Beta
+	// 2                   (C1:D2 merged)    (E1:F2 merged)
+	// 3   East                     Q1                Q1
+	// 4   (A3:B4)         Revenue  100      Revenue  200
+	// 5   West                     Q1                Q1
+	// 6   (A5:B6)         Revenue  300      Revenue  400
+
+	// Verify outer VAxis merged headers
+	val, _ := f.GetCellValue(sheet, "A3")
+	if val != "East" {
+		t.Errorf("A3 (outer VAxis): want East, got %s", val)
+	}
+	val, _ = f.GetCellValue(sheet, "A5")
+	if val != "West" {
+		t.Errorf("A5 (outer VAxis): want West, got %s", val)
+	}
+
+	// Verify outer HAxis merged headers
+	val, _ = f.GetCellValue(sheet, "C1")
+	if val != "Alpha" {
+		t.Errorf("C1 (outer HAxis): want Alpha, got %s", val)
+	}
+	val, _ = f.GetCellValue(sheet, "E1")
+	if val != "Beta" {
+		t.Errorf("E1 (outer HAxis): want Beta, got %s", val)
+	}
+
+	// Verify merged cells exist for outer headers
+	mergeCells, err := f.GetMergeCells(sheet)
+	if err != nil {
+		t.Fatalf("Failed to get merge cells: %v", err)
+	}
+	expectedMerges := []string{"A3:B4", "A5:B6", "C1:D2", "E1:F2"}
+	for _, expected := range expectedMerges {
+		found := false
+		for _, mc := range mergeCells {
+			ref := mc.GetStartAxis() + ":" + mc.GetEndAxis()
+			if ref == expected {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected merged cell %s not found", expected)
+		}
+	}
+
+	// Verify inner HAxis headers (period)
+	val, _ = f.GetCellValue(sheet, "D3")
+	if val != "Q1" {
+		t.Errorf("D3 (inner period, East×Alpha): want Q1, got %s", val)
+	}
+	val, _ = f.GetCellValue(sheet, "F3")
+	if val != "Q1" {
+		t.Errorf("F3 (inner period, East×Beta): want Q1, got %s", val)
+	}
+	val, _ = f.GetCellValue(sheet, "D5")
+	if val != "Q1" {
+		t.Errorf("D5 (inner period, West×Alpha): want Q1, got %s", val)
+	}
+	val, _ = f.GetCellValue(sheet, "F5")
+	if val != "Q1" {
+		t.Errorf("F5 (inner period, West×Beta): want Q1, got %s", val)
+	}
+
+	// Verify inner VAxis headers (metric)
+	val, _ = f.GetCellValue(sheet, "C4")
+	if val != "Revenue" {
+		t.Errorf("C4 (inner metric, East×Alpha): want Revenue, got %s", val)
+	}
+	val, _ = f.GetCellValue(sheet, "E4")
+	if val != "Revenue" {
+		t.Errorf("E4 (inner metric, East×Beta): want Revenue, got %s", val)
+	}
+	val, _ = f.GetCellValue(sheet, "C6")
+	if val != "Revenue" {
+		t.Errorf("C6 (inner metric, West×Alpha): want Revenue, got %s", val)
+	}
+	val, _ = f.GetCellValue(sheet, "E6")
+	if val != "Revenue" {
+		t.Errorf("E6 (inner metric, West×Beta): want Revenue, got %s", val)
+	}
+
+	// Verify inner values (amount)
+	val, _ = f.GetCellValue(sheet, "D4")
+	if val != "100" {
+		t.Errorf("D4 (East×Alpha value): want 100, got %s", val)
+	}
+	val, _ = f.GetCellValue(sheet, "F4")
+	if val != "200" {
+		t.Errorf("F4 (East×Beta value): want 200, got %s", val)
+	}
+	val, _ = f.GetCellValue(sheet, "D6")
+	if val != "300" {
+		t.Errorf("D6 (West×Alpha value): want 300, got %s", val)
+	}
+	val, _ = f.GetCellValue(sheet, "F6")
+	if val != "400" {
+		t.Errorf("F6 (West×Beta value): want 400, got %s", val)
+	}
+}
+
 // Helper to create ArchiveDate Template
 func setupTemplateArchiveDate(t *testing.T) *excelize.File {
 	f := excelize.NewFile()

@@ -213,13 +213,13 @@ func (g *Generator) processBlockWithParams(f ExcelFile, sheetName string, block 
 		// But wait, we are inside a loop.
 
 		// Refactoring processMatrixBlock to accept params is the right way.
-		return g.processMatrixBlockWithParams(f, sheetName, block, params)
+		return g.processMatrixBlockWithParams(f, sheetName, block, params, true)
 	default:
 		return fmt.Errorf("unsupported block type: %s", block.Type)
 	}
 }
 
-func (g *Generator) processMatrixBlockWithParams(f ExcelFile, sheetName string, block *config.BlockConfig, params map[string]string) error {
+func (g *Generator) processMatrixBlockWithParams(f ExcelFile, sheetName string, block *config.BlockConfig, params map[string]string, allowExpansion bool) error {
 	// 1. Identify Axes
 	var vH, hH *config.BlockConfig
 	for i := range block.SubBlocks {
@@ -253,71 +253,77 @@ func (g *Generator) processMatrixBlockWithParams(f ExcelFile, sheetName string, 
 			return err
 		}
 
-		// Insert Rows logic (same as before)
-		dataCount := len(headerData)
-		if dataCount > 1 {
-			_, _, _, endRow, err := parseRange(vH.Range.Ref)
-			if err != nil {
-				return err
-			}
-			_, startRow, _, _, err := parseRange(vH.Range.Ref)
-			if err != nil {
-				return err
-			}
-			axisHeight := endRow - startRow + 1
-			insertCount := (dataCount - 1) * axisHeight
-			if err := f.InsertRows(sheetName, endRow+1, insertCount); err != nil {
-				return err
-			}
-		}
-
 		staticData, err = g.Context.GetBlockDataWithParams(hH, params)
 		if err != nil {
 			return err
 		}
 
-		// If Horizontal Axis has multiple items, we need to expand columns too, even if Vertical Header expanded rows
-		if len(staticData) > 1 {
-			startCol, _, endCol, _, err := parseRange(hH.Range.Ref)
-			if err != nil {
-				return err
-			}
-			axisWidth := endCol - startCol + 1
-			insertCount := (len(staticData) - 1) * axisWidth
-			colName, _ := excelize.ColumnNumberToName(endCol + 1)
-			if err := f.InsertCols(sheetName, colName, insertCount); err != nil {
-				return err
-			}
-
-			// Copy Template Columns
-			if err := g.copyTemplateSlice(f, sheetName, block, vH.Name, endCol+1, insertCount, false); err != nil {
-				return err
-			}
+		if !allowExpansion && (len(headerData) > 1 || len(staticData) > 1) {
+			return fmt.Errorf("nested matrix block %s cannot expand rows or columns", block.Name)
 		}
 
-		// Copy Template Rows to the new inserted rows (AFTER cols are inserted to ensure correct width?)
-		// Actually, InsertCols might shift rows? No.
-		// But InsertRows must happen before we fill data.
-		// And we already inserted rows above.
-		// BUT we haven't copied the template rows yet.
-		// We should copy template rows NOW, after horizontal expansion is done (if any),
-		// because horizontal expansion might have widened the template row.
-		if dataCount > 1 {
-			// Calculate bounding box rows
-			// Re-parse ranges because InsertCols might have shifted things?
-			// InsertCols shifts columns to the right. It doesn't affect row indices.
-			// BUT it affects the CONTENT of the row.
-			// So yes, we should copy rows AFTER columns are expanded.
-
-			_, startRow, _, endRow, err := parseRange(vH.Range.Ref)
-			if err != nil {
-				return err
+		// Insert Rows logic (same as before)
+		if allowExpansion {
+			dataCount := len(headerData)
+			if dataCount > 1 {
+				_, _, _, endRow, err := parseRange(vH.Range.Ref)
+				if err != nil {
+					return err
+				}
+				_, startRow, _, _, err := parseRange(vH.Range.Ref)
+				if err != nil {
+					return err
+				}
+				axisHeight := endRow - startRow + 1
+				insertCount := (dataCount - 1) * axisHeight
+				if err := f.InsertRows(sheetName, endRow+1, insertCount); err != nil {
+					return err
+				}
 			}
-			axisHeight := endRow - startRow + 1
-			insertCount := (dataCount - 1) * axisHeight
 
-			if err := g.copyTemplateSlice(f, sheetName, block, hH.Name, endRow+1, insertCount, true); err != nil {
-				return err
+			// If Horizontal Axis has multiple items, we need to expand columns too, even if Vertical Header expanded rows
+			if len(staticData) > 1 {
+				startCol, _, endCol, _, err := parseRange(hH.Range.Ref)
+				if err != nil {
+					return err
+				}
+				axisWidth := endCol - startCol + 1
+				insertCount := (len(staticData) - 1) * axisWidth
+				colName, _ := excelize.ColumnNumberToName(endCol + 1)
+				if err := f.InsertCols(sheetName, colName, insertCount); err != nil {
+					return err
+				}
+
+				// Copy Template Columns
+				if err := g.copyTemplateSlice(f, sheetName, block, vH.Name, endCol+1, insertCount, false); err != nil {
+					return err
+				}
+			}
+
+			// Copy Template Rows to the new inserted rows (AFTER cols are inserted to ensure correct width?)
+			// Actually, InsertCols might shift rows? No.
+			// But InsertRows must happen before we fill data.
+			// And we already inserted rows above.
+			// BUT we haven't copied the template rows yet.
+			// We should copy template rows NOW, after horizontal expansion is done (if any),
+			// because horizontal expansion might have widened the template row.
+			if dataCount > 1 {
+				// Calculate bounding box rows
+				// Re-parse ranges because InsertCols might have shifted things?
+				// InsertCols shifts columns to the right. It doesn't affect row indices.
+				// BUT it affects the CONTENT of the row.
+				// So yes, we should copy rows AFTER columns are expanded.
+
+				_, startRow, _, endRow, err := parseRange(vH.Range.Ref)
+				if err != nil {
+					return err
+				}
+				axisHeight := endRow - startRow + 1
+				insertCount := (dataCount - 1) * axisHeight
+
+				if err := g.copyTemplateSlice(f, sheetName, block, hH.Name, endRow+1, insertCount, true); err != nil {
+					return err
+				}
 			}
 		}
 
@@ -328,39 +334,53 @@ func (g *Generator) processMatrixBlockWithParams(f ExcelFile, sheetName string, 
 			return err
 		}
 
-		// Insert Cols logic
-		dataCount := len(headerData)
-		if dataCount > 1 {
-			startCol, _, endCol, _, err := parseRange(hH.Range.Ref)
-			if err != nil {
-				return err
-			}
-			axisWidth := endCol - startCol + 1
-			insertCount := (dataCount - 1) * axisWidth
-			colName, _ := excelize.ColumnNumberToName(endCol + 1)
-			if err := f.InsertCols(sheetName, colName, insertCount); err != nil {
-				return err
-			}
-
-			// Copy Template Columns
-			if err := g.copyTemplateSlice(f, sheetName, block, vH.Name, endCol+1, insertCount, false); err != nil {
-				return err
-			}
-		}
-
 		staticData, err = g.Context.GetBlockDataWithParams(vH, params)
 		if err != nil {
 			return err
 		}
+
+		if !allowExpansion && (len(headerData) > 1 || len(staticData) > 1) {
+			return fmt.Errorf("nested matrix block %s cannot expand rows or columns", block.Name)
+		}
+
+		// Insert Cols logic
+		if allowExpansion {
+			dataCount := len(headerData)
+			if dataCount > 1 {
+				startCol, _, endCol, _, err := parseRange(hH.Range.Ref)
+				if err != nil {
+					return err
+				}
+				axisWidth := endCol - startCol + 1
+				insertCount := (dataCount - 1) * axisWidth
+				colName, _ := excelize.ColumnNumberToName(endCol + 1)
+				if err := f.InsertCols(sheetName, colName, insertCount); err != nil {
+					return err
+				}
+
+				// Copy Template Columns
+				if err := g.copyTemplateSlice(f, sheetName, block, vH.Name, endCol+1, insertCount, false); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	// In vertical expand mode: headerData=vH data, staticData=hH data.
+	// In horizontal expand mode: headerData=hH data, staticData=vH data.
+	// Resolve to the correct data for each axis before filling.
+	vData, hData := headerData, staticData
+	if !isVerticalExpand {
+		vData, hData = staticData, headerData
 	}
 
 	// Fill vertical Headers
-	if err := g.fillBlockData(f, sheetName, vH, headerData); err != nil {
+	if err := g.fillBlockData(f, sheetName, vH, vData); err != nil {
 		return fmt.Errorf("failed to fill vertical headers: %w", err)
 	}
 
 	// Fill horizontal Headers
-	if err := g.fillBlockData(f, sheetName, hH, staticData); err != nil {
+	if err := g.fillBlockData(f, sheetName, hH, hData); err != nil {
 		return fmt.Errorf("failed to fill horizontal headers: %w", err)
 	}
 
@@ -370,11 +390,16 @@ func (g *Generator) processMatrixBlockWithParams(f ExcelFile, sheetName string, 
 
 	// Collect Template Blocks (SubBlocks that are NOT Header)
 	var templateBlocks []*config.BlockConfig
+	var matrixBlocks []*config.BlockConfig
 	for i := range block.SubBlocks {
 		sb := &block.SubBlocks[i]
 		// Use Template flag if available, otherwise fallback to Type != Header
 		if sb.Template || sb.Type != config.BlockTypeHeader {
-			templateBlocks = append(templateBlocks, sb)
+			if sb.Type == config.BlockTypeMatrix {
+				matrixBlocks = append(matrixBlocks, sb)
+			} else {
+				templateBlocks = append(templateBlocks, sb)
+			}
 		}
 	}
 
@@ -463,6 +488,16 @@ func (g *Generator) processMatrixBlockWithParams(f ExcelFile, sheetName string, 
 			// Calculate Offsets
 			rowOffset := r * vStep
 			colOffset := c * hStep
+
+			for _, mb := range matrixBlocks {
+				offsetBlock, err := offsetBlockConfig(*mb, colOffset, rowOffset)
+				if err != nil {
+					return err
+				}
+				if err := g.processMatrixBlockWithParams(f, sheetName, &offsetBlock, cellParams, false); err != nil {
+					return err
+				}
+			}
 
 			// Process each Template using Cache
 			for _, cache := range cachedTemplates {
@@ -839,4 +874,42 @@ func parseRange(ref string) (int, int, int, int, error) {
 		return 0, 0, 0, 0, err
 	}
 	return c1, r1, c2, r2, nil
+}
+
+func offsetRange(ref string, colOffset, rowOffset int) (string, error) {
+	c1, r1, c2, r2, err := parseRange(ref)
+	if err != nil {
+		return "", err
+	}
+	startCell, err := excelize.CoordinatesToCellName(c1+colOffset, r1+rowOffset)
+	if err != nil {
+		return "", err
+	}
+	endCell, err := excelize.CoordinatesToCellName(c2+colOffset, r2+rowOffset)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s:%s", startCell, endCell), nil
+}
+
+func offsetBlockConfig(block config.BlockConfig, colOffset, rowOffset int) (config.BlockConfig, error) {
+	updated := block
+	if block.Range.Ref != "" {
+		ref, err := offsetRange(block.Range.Ref, colOffset, rowOffset)
+		if err != nil {
+			return config.BlockConfig{}, err
+		}
+		updated.Range.Ref = ref
+	}
+	if len(block.SubBlocks) > 0 {
+		updated.SubBlocks = make([]config.BlockConfig, len(block.SubBlocks))
+		for i, sub := range block.SubBlocks {
+			offsetSub, err := offsetBlockConfig(sub, colOffset, rowOffset)
+			if err != nil {
+				return config.BlockConfig{}, err
+			}
+			updated.SubBlocks[i] = offsetSub
+		}
+	}
+	return updated, nil
 }

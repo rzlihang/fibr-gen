@@ -37,3 +37,7 @@ fibr-gen
 lambda
 
 WARP.md
+
+/docs/old_docs/
+
+*.local.*
