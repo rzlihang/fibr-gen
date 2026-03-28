@@ -41,3 +41,6 @@ WARP.md
 /docs/old_docs/
 
 *.local.*
+*.local/
+package-lock.json
+pnpm-lock.*
