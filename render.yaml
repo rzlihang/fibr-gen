@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: fibr-gen
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: RATE_LIMIT_RPS
+        value: "1.0"
+      - key: RATE_LIMIT_BURST
+        value: "5"
