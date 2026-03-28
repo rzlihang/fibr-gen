@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
-import { Steps, Button, message, Alert } from "antd";
+import { Steps, Button, message } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 
 import UploadStep, { type UploadedFiles } from "../components/UploadStep";
 import ReviewStep from "../components/ReviewStep";
@@ -16,6 +17,7 @@ const initialFiles: UploadedFiles = {
 
 export default function GeneratePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [current, setCurrent] = useState(0);
   const [files, setFiles] = useState<UploadedFiles>(initialFiles);
   const [paramsJson, setParamsJson] = useState("");
@@ -24,18 +26,14 @@ export default function GeneratePage() {
   const [resultBlob, setResultBlob] = useState<Blob | null>(null);
 
   const canProceedFromUpload =
-    files.config !== null &&
-    files.template !== null &&
-    files.dataFiles.length > 0;
+    files.config !== null && files.template !== null && files.dataFiles.length > 0;
 
   const isValidParams =
     paramsJson.trim() === "" ||
     (() => {
       try {
         const parsed = JSON.parse(paramsJson);
-        return (
-          typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
-        );
+        return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed);
       } catch {
         return false;
       }
@@ -64,18 +62,18 @@ export default function GeneratePage() {
 
       setResultBlob(blob);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred");
+      setError(err instanceof Error ? err.message : t("messages.unknownError"));
     } finally {
       setLoading(false);
     }
-  }, [files, paramsJson]);
+  }, [files, paramsJson, t]);
 
   const handleDownload = useCallback(() => {
     if (!resultBlob) return;
     const name = files.template?.name.replace(/\.xlsx$/, "") ?? "report";
     downloadBlob(resultBlob, `${name}_output.xlsx`);
-    message.success("Download started");
-  }, [resultBlob, files.template]);
+    message.success(t("messages.downloadStarted"));
+  }, [resultBlob, files.template, t]);
 
   const handleReset = useCallback(() => {
     setCurrent(0);
@@ -87,52 +85,33 @@ export default function GeneratePage() {
 
   const steps = [
     {
-      title: "Upload",
-      description: "Template, config & data",
+      title: t("generate.steps.upload"),
+      description: t("generate.steps.uploadDesc"),
     },
     {
-      title: "Review",
-      description: "Verify files & params",
+      title: t("generate.steps.review"),
+      description: t("generate.steps.reviewDesc"),
     },
     {
-      title: "Result",
-      description: "Download report",
+      title: t("generate.steps.result"),
+      description: t("generate.steps.resultDesc"),
     },
   ];
 
   return (
     <div className="max-w-3xl mx-auto p-8">
       <div className="flex items-center gap-2 mb-6">
-        <Button
-          type="text"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/")}
-        />
-        <h1 className="text-2xl font-semibold m-0">fibr-gen Report Generator</h1>
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate("/")} />
+        <h1 className="text-2xl font-semibold m-0">{t("generate.title")}</h1>
       </div>
 
       <Steps current={current} items={steps} className="mb-8" />
 
-      <Alert
-        message="Changes will not be saved"
-        description="The files and parameters you upload here are temporary and will not be saved. Download your report before closing this page."
-        type="info"
-        showIcon
-        closable
-        className="mb-6"
-      />
-
       <div className="min-h-75">
-        {current === 0 && (
-          <UploadStep files={files} onChange={setFiles} />
-        )}
+        {current === 0 && <UploadStep files={files} onChange={setFiles} />}
 
         {current === 1 && (
-          <ReviewStep
-            files={files}
-            paramsJson={paramsJson}
-            onParamsChange={setParamsJson}
-          />
+          <ReviewStep files={files} paramsJson={paramsJson} onParamsChange={setParamsJson} />
         )}
 
         {current === 2 && (
@@ -148,29 +127,18 @@ export default function GeneratePage() {
 
       {current < 2 && (
         <div className="flex justify-between mt-8">
-          <Button
-            disabled={current === 0}
-            onClick={() => setCurrent((c) => c - 1)}
-          >
-            Back
+          <Button disabled={current === 0} onClick={() => setCurrent((c) => c - 1)}>
+            {t("generate.buttons.back")}
           </Button>
           <div className="flex gap-2">
             {current === 0 && (
-              <Button
-                type="primary"
-                disabled={!canProceedFromUpload}
-                onClick={() => setCurrent(1)}
-              >
-                Next
+              <Button type="primary" disabled={!canProceedFromUpload} onClick={() => setCurrent(1)}>
+                {t("generate.buttons.next")}
               </Button>
             )}
             {current === 1 && (
-              <Button
-                type="primary"
-                disabled={!isValidParams}
-                onClick={handleGenerate}
-              >
-                Generate Report
+              <Button type="primary" disabled={!isValidParams} onClick={handleGenerate}>
+                {t("generate.buttons.generateReport")}
               </Button>
             )}
           </div>

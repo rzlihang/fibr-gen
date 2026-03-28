@@ -1,9 +1,6 @@
 import { Button, Card, Form, Input, Typography, Upload } from "antd";
-import {
-  PlusOutlined,
-  DeleteOutlined,
-  FileTextOutlined,
-} from "@ant-design/icons";
+import { PlusOutlined, DeleteOutlined, FileTextOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import type { UploadFile } from "antd";
 import type { DataSourceDef } from "../../lib/configTypes";
 
@@ -27,16 +24,10 @@ function parseCsvHeaders(text: string): string[] {
   return firstLine.split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
 }
 
-export default function DataSourceStep({
-  dataSources,
-  csvMeta,
-  onChange,
-}: DataSourceStepProps) {
-  const updateItem = (
-    index: number,
-    field: keyof DataSourceDef,
-    value: string,
-  ) => {
+export default function DataSourceStep({ dataSources, csvMeta, onChange }: DataSourceStepProps) {
+  const { t } = useTranslation();
+
+  const updateItem = (index: number, field: keyof DataSourceDef, value: string) => {
     const next = [...dataSources];
     next[index] = { ...next[index], [field]: value };
     onChange(next, csvMeta);
@@ -55,7 +46,6 @@ export default function DataSourceStep({
       const nextMeta = [...csvMeta];
       nextMeta[index] = { file, headers };
 
-      // Auto-fill name from filename if empty
       const nextDS = [...dataSources];
       if (!nextDS[index].name) {
         const name = file.name.replace(/\.csv$/i, "");
@@ -64,7 +54,6 @@ export default function DataSourceStep({
 
       onChange(nextDS, nextMeta);
     };
-    // Only read first 4KB to get headers
     reader.readAsText(file.slice(0, 4096));
   };
 
@@ -90,7 +79,7 @@ export default function DataSourceStep({
           <Card
             key={index}
             size="small"
-            title={`Data Source ${index + 1}`}
+            title={`${t("builder.dataSources.title")} ${index + 1}`}
             extra={
               dataSources.length > 1 && (
                 <Button
@@ -103,7 +92,7 @@ export default function DataSourceStep({
             }
           >
             <Form layout="vertical" size="small">
-              <Form.Item label="CSV File">
+              <Form.Item label={t("builder.dataSources.csvFile")}>
                 <Dragger
                   accept=".csv"
                   maxCount={1}
@@ -127,28 +116,26 @@ export default function DataSourceStep({
                   <p className="text-2xl text-gray-400">
                     <FileTextOutlined />
                   </p>
-                  <Text className="text-xs">
-                    Drop a CSV file here or click to browse
-                  </Text>
+                  <Text className="text-xs">{t("builder.dataSources.dropCsv")}</Text>
                 </Dragger>
               </Form.Item>
 
               {meta.headers.length > 0 && (
                 <div className="mb-3 text-xs text-gray-500">
                   <Text type="secondary">
-                    Columns detected: {meta.headers.join(", ")}
+                    {t("builder.dataSources.columnsDetected")}: {meta.headers.join(", ")}
                   </Text>
                 </div>
               )}
 
               <Form.Item
-                label="Name"
+                label={t("builder.dataSources.name")}
                 required
                 validateStatus={ds.name ? "" : "error"}
-                help={ds.name ? undefined : "Name is required"}
+                help={ds.name ? undefined : t("builder.dataSources.nameRequired")}
               >
                 <Input
-                  placeholder="e.g. local_csv (auto-filled from filename)"
+                  placeholder={t("builder.dataSources.namePlaceholder")}
                   value={ds.name}
                   onChange={(e) => updateItem(index, "name", e.target.value)}
                 />
@@ -158,7 +145,7 @@ export default function DataSourceStep({
         );
       })}
       <Button type="dashed" icon={<PlusOutlined />} onClick={addItem} block>
-        Add Data Source
+        {t("builder.dataSources.addDataSource")}
       </Button>
     </div>
   );

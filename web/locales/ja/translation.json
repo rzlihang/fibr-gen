@@ -1,0 +1,186 @@
+{
+  "app": {
+    "title": "fibr-gen",
+    "subtitle": "テンプレートとデータからExcelレポートを生成"
+  },
+  "nav": {
+    "uploadFiles": "ファイルをアップロード",
+    "buildConfig": "設定をビルド",
+    "docs": "ドキュメント",
+    "uploadFilesDesc": "設定YAML、Excelテンプレート、CSVデータファイルを直接アップロード",
+    "buildConfigDesc": "ステップバイステップウィザードで設定をインタラクティブに作成"
+  },
+  "generate": {
+    "title": "fibr-gen レポート生成器",
+    "steps": {
+      "upload": "アップロード",
+      "uploadDesc": "テンプレート、設定、データ",
+      "review": "確認",
+      "reviewDesc": "ファイルとパラメータを検証",
+      "result": "結果",
+      "resultDesc": "レポートをダウンロード"
+    },
+    "alertTemporary": {
+      "title": "変更は保存されません",
+      "desc": "ここでアップロードしたファイルとパラメータは一時的なものであり、保存されません。このページを閉じる前にレポートをダウンロードしてください。"
+    },
+    "buttons": {
+      "back": "戻る",
+      "next": "次へ",
+      "generateReport": "レポートを生成"
+    }
+  },
+  "upload": {
+    "configBundle": "設定バンドル (.yaml)",
+    "configBundleDesc": "設定YAMLファイルをここにクリックまたはドラッグ",
+    "template": "テンプレート (.xlsx)",
+    "templateDesc": "Excelテンプレートをここにクリックまたはドラッグ",
+    "dataFiles": "データファイル (.csv)",
+    "dataFilesDesc": "CSVデータファイルをここにクリックまたはドラッグ（データビューごとに1つ）"
+  },
+  "review": {
+    "config": "設定",
+    "template": "テンプレート",
+    "dataFiles": "データファイル",
+    "notUploaded": "未アップロード",
+    "noFilesUploaded": "ファイルがアップロードされていません",
+    "extraParams": "追加パラメータ（オプションのJSON）",
+    "extraParamsPlaceholder": "{\"env\": \"prod\", \"archive_date\": \"2026-03-28\"}",
+    "invalidJson": "有効なJSONオブジェクトである必要があります"
+  },
+  "result": {
+    "generating": "レポートを生成中...",
+    "generatingSubtitle": "データサイズによっては時間がかかることがあります。",
+    "failed": "生成失敗",
+    "success": "レポートが生成されました！",
+    "tryAgain": "再試行",
+    "downloadReport": "レポートをダウンロード",
+    "generateAnother": "別のレポートを生成"
+  },
+  "builder": {
+    "title": "設定ビルダー",
+    "steps": {
+      "dataSetup": "データ設定",
+      "dataSetupDesc": "CSVをアップロードして列をマッピング",
+      "workbook": "ワークブック",
+      "workbookDesc": "シートとブロック",
+      "preview": "プレビューと生成",
+      "previewDesc": "YAMLを確認"
+    },
+    "dataSources": {
+      "title": "データソース",
+      "titleDesc": "最初にCSVファイルをアップロードして、次のセクションで検出された列を使用できるようにしてください。",
+      "csvFile": "CSVファイル",
+      "dropCsv": "CSVファイルをここにドロップまたはクリックして参照",
+      "columnsDetected": "検出された列",
+      "name": "名前",
+      "namePlaceholder": "例：local_csv（ファイル名から自動入力）",
+      "nameRequired": "名前は必須です",
+      "addDataSource": "データソースを追加"
+    },
+    "dataViews": {
+      "title": "データビュー",
+      "titleDesc": "ここでラベルを定義して、ワークブック設定で次のステップで直接参照できるようにしてください。",
+      "name": "名前",
+      "namePlaceholder": "例：employee_view",
+      "dataSource": "データソース",
+      "selectDataSource": "データソースを選択",
+      "labels": "ラベル（列マッピング）",
+      "mapAllColumns": "すべての列をマッピング",
+      "labelName": "ラベル名",
+      "columnName": "列名",
+      "addLabel": "ラベルを追加",
+      "addDataView": "データビューを追加"
+    },
+    "workbook": {
+      "settings": "ワークブック設定",
+      "workbookName": "ワークブック名",
+      "workbookNamePlaceholder": "例：月次レポート",
+      "templateFile": "テンプレートファイル (.xlsx)",
+      "dropTemplate": "Excelテンプレートをここにドロップまたはクリックして参照",
+      "parsing": "テンプレートを解析中...",
+      "templatePreview": "テンプレートプレビュー",
+      "unmatchedPlaceholders": "一致しないテンプレートプレースホルダ",
+      "unmatchedDesc": "続行する前に、データ設定でこれらのラベルのマッピングを追加してください",
+      "headerLabelRequired": "ヘッダーラベル変数が必要です",
+      "headerLabelDesc": " 구성된各ヘッダーブロックのラベル変数を選択してください",
+      "sheets": "シート",
+      "sheetName": "シート名",
+      "sheetNamePlaceholder": "例：Sheet1",
+      "dynamic": "動的",
+      "dataView": "データビュー",
+      "paramLabel": "パラメータラベル",
+      "paramLabelPlaceholder": "例：month_label",
+      "blocks": "ブロック",
+      "blockName": "名前",
+      "blockNamePlaceholder": "例：DataBlock1",
+      "headerBlockNamePlaceholder": "例：RowHeader",
+      "type": "タイプ",
+      "blockTypeValue": "値",
+      "blockTypeMatrix": "マトリクス",
+      "blockTypeNestedMatrix": "マトリクス（ネスト）",
+      "rangeRef": "範囲 (ref)",
+      "rangeRefPlaceholder": "例：A1:B5",
+      "headerRangeRefPlaceholder": "例：A3:A3",
+      "dataViewOptional": "データビュー（オプション）",
+      "direction": "方向",
+      "directionVertical": "縦方向",
+      "directionHorizontal": "横方向",
+      "directionPlaceholder": "（オプション）",
+      "rowLimit": "行数制限",
+      "rowLimitPlaceholder": "0 = 無制限",
+      "insertAfter": "後に挿入",
+      "template": "テンプレート",
+      "rowHeader": "行ヘッダー（垂直軸）",
+      "colHeader": "列ヘッダー（水平軸）",
+      "dataBlocks": "データブロック",
+      "labelVariable": "ラベル変数",
+      "selectLabel": "ラベル変数を選択",
+      "chooseLabel": "既存のマッピングから選択",
+      "noLabelMappings": "利用可能なラベルマッピングがありません。最初にデータ設定でラベルを構成してください。",
+      "addBlock": "ブロックを追加",
+      "addSheet": "シートを追加",
+      "addDataBlock": "データブロックを追加",
+      "defaultRowHeaderName": "行ヘッダー",
+      "defaultColHeaderName": "列ヘッダー",
+      "defaultDataBlockName": "データ",
+      "unnamedBlock": "無名のブロック",
+      "sheetNumber": "シート {{number}}",
+      "templateCells": "テンプレートセル"
+    },
+    "preview": {
+      "generatedYaml": "生成されたYAML",
+      "copy": "コピー",
+      "download": "ダウンロード",
+      "files": "ファイル",
+      "template": "テンプレート",
+      "noTemplate": "テンプレートがアップロードされていません（ステップ3に戻る）",
+      "dataFilesLabel": "データファイル",
+      "noDataFiles": "データファイルがアップロードされていません（ステップ1に戻る）",
+      "missingDataFiles": "データファイルが欠落しています",
+      "missingDesc": "一部のデータビューにはマッピングされたCSVがアップロードされていません。続行する前に、ステップ1またはステップ2に戻ってマッピングを修正してください。",
+      "generateReport": "レポートを生成"
+    }
+  },
+  "messages": {
+    "downloadStarted": "ダウンロードが開始されました",
+    "yamlCopied": "YAMLがクリップボードにコピーされました",
+    "reportGenerated": "レポートが生成されダウンロードされました！",
+    "uploadTemplateAndData": "テンプレートとデータファイルの両方をアップロードしてください",
+    "unknownError": "不明なエラーが発生しました"
+  },
+  "common": {
+    "empty": "空"
+  },
+  "templatePreview": {
+    "matched": "ラベルにマッチしました",
+    "unmatched": "ステップ2に一致するラベルがありません",
+    "noMatchingLabel": "ステップ2で定義された一致するラベルがありません",
+    "labelMappings": "ラベルマッピング",
+    "unnamedDataView": "名前なしデータビュー",
+    "noDataSource": "データソースなし",
+    "label": "ラベル",
+    "column": "列",
+    "noLabelsConfigured": "ラベルが設定されていません"
+  }
+}

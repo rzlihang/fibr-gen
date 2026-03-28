@@ -5,6 +5,7 @@ import {
   LoadingOutlined,
   DownloadOutlined,
 } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 
 interface ResultStepProps {
   loading: boolean;
@@ -21,12 +22,14 @@ export default function ResultStep({
   onDownload,
   onReset,
 }: ResultStepProps) {
+  const { t } = useTranslation();
+
   if (loading) {
     return (
       <Result
         icon={<LoadingOutlined spin />}
-        title="Generating Report..."
-        subTitle="This may take a moment depending on data size."
+        title={t("result.generating")}
+        subTitle={t("result.generatingSubtitle")}
       />
     );
   }
@@ -36,11 +39,11 @@ export default function ResultStep({
       <Result
         status="error"
         icon={<CloseCircleOutlined />}
-        title="Generation Failed"
+        title={t("result.failed")}
         subTitle={error}
         extra={
           <Button type="primary" onClick={onReset}>
-            Try Again
+            {t("result.tryAgain")}
           </Button>
         }
       />
@@ -52,18 +55,13 @@ export default function ResultStep({
       <Result
         status="success"
         icon={<CheckCircleOutlined />}
-        title="Report Generated!"
+        title={t("result.success")}
         extra={[
-          <Button
-            type="primary"
-            icon={<DownloadOutlined />}
-            onClick={onDownload}
-            key="download"
-          >
-            Download Report
+          <Button type="primary" icon={<DownloadOutlined />} onClick={onDownload} key="download">
+            {t("result.downloadReport")}
           </Button>,
           <Button onClick={onReset} key="reset">
-            Generate Another
+            {t("result.generateAnother")}
           </Button>,
         ]}
       />

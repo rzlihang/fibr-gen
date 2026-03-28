@@ -1,9 +1,6 @@
 import { Descriptions, Input, Tag, Typography } from "antd";
-import {
-  FileExcelOutlined,
-  FileTextOutlined,
-  SettingOutlined,
-} from "@ant-design/icons";
+import { FileExcelOutlined, FileTextOutlined, SettingOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import type { UploadedFiles } from "./UploadStep";
 
 const { Text } = Typography;
@@ -14,13 +11,12 @@ interface ReviewStepProps {
   onParamsChange: (json: string) => void;
 }
 
-export default function ReviewStep({
-  files,
-  paramsJson,
-  onParamsChange,
-}: ReviewStepProps) {
+export default function ReviewStep({ files, paramsJson, onParamsChange }: ReviewStepProps) {
+  const { t } = useTranslation();
+
   const isValidJson =
-    paramsJson.trim() === "" || (() => {
+    paramsJson.trim() === "" ||
+    (() => {
       try {
         const parsed = JSON.parse(paramsJson);
         return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed);
@@ -35,25 +31,25 @@ export default function ReviewStep({
         <Descriptions.Item
           label={
             <span>
-              <SettingOutlined /> Config
+              <SettingOutlined /> {t("review.config")}
             </span>
           }
         >
-          {files.config?.name ?? <Text type="danger">Not uploaded</Text>}
+          {files.config?.name ?? <Text type="danger">{t("review.notUploaded")}</Text>}
         </Descriptions.Item>
         <Descriptions.Item
           label={
             <span>
-              <FileExcelOutlined /> Template
+              <FileExcelOutlined /> {t("review.template")}
             </span>
           }
         >
-          {files.template?.name ?? <Text type="danger">Not uploaded</Text>}
+          {files.template?.name ?? <Text type="danger">{t("review.notUploaded")}</Text>}
         </Descriptions.Item>
         <Descriptions.Item
           label={
             <span>
-              <FileTextOutlined /> Data Files
+              <FileTextOutlined /> {t("review.dataFiles")}
             </span>
           }
         >
@@ -64,24 +60,24 @@ export default function ReviewStep({
               ))}
             </div>
           ) : (
-            <Text type="danger">No files uploaded</Text>
+            <Text type="danger">{t("review.noFilesUploaded")}</Text>
           )}
         </Descriptions.Item>
       </Descriptions>
 
       <div>
-        <Text strong>Extra Parameters (optional JSON)</Text>
+        <Text strong>{t("review.extraParams")}</Text>
         <Input.TextArea
           className="mt-2"
           rows={3}
-          placeholder='{"env": "prod", "archive_date": "2026-03-28"}'
+          placeholder={t("review.extraParamsPlaceholder")}
           value={paramsJson}
           onChange={(e) => onParamsChange(e.target.value)}
           status={isValidJson ? undefined : "error"}
         />
         {!isValidJson && (
           <Text type="danger" className="text-xs">
-            Must be a valid JSON object
+            {t("review.invalidJson")}
           </Text>
         )}
       </div>

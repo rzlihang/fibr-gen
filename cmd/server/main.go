@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+	"golang.org/x/time/rate"
 )
 
 func main() {
@@ -34,12 +36,31 @@ func main() {
 		allowedOrigins = "*"
 	}
 
-	mux := http.NewServeMux()
+	// Rate limiter config (only applies to /api/ routes)
+	rps := rate.Limit(1.0) // 1 request/second sustained
+	burst := 5
+	if v := os.Getenv("RATE_LIMIT_RPS"); v != "" {
+		if f, err := strconv.ParseFloat(v, 64); err == nil && f > 0 {
+			rps = rate.Limit(f)
+		}
+	}
+	if v := os.Getenv("RATE_LIMIT_BURST"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			burst = n
+		}
+	}
+	ipLimiter := NewIPRateLimiter(rps, burst)
+	slog.Info("Rate limiting enabled", "rps", rps, "burst", burst)
 
+	// API mux — rate-limited
+	apiMux := http.NewServeMux()
 	h := &Handler{MaxUploadSize: maxUploadSize}
+	apiMux.HandleFunc("POST /api/generate", h.Generate)
+	apiMux.HandleFunc("POST /api/template/parse", h.ParseTemplate)
+
+	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", h.Health)
-	mux.HandleFunc("POST /api/generate", h.Generate)
-	mux.HandleFunc("POST /api/template/parse", h.ParseTemplate)
+	mux.Handle("/api/", RateLimitMiddleware(ipLimiter)(apiMux))
 
 	// Serve frontend static files if the directory exists
 	staticDir := os.Getenv("STATIC_DIR")

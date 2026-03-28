@@ -1,12 +1,10 @@
 import { useMemo } from "react";
 import { Badge, Tabs, Tooltip, Typography } from "antd";
+import { useTranslation } from "react-i18next";
 import type { ParsedSheet } from "../../api/template";
 import type { DataViewDef } from "../../lib/configTypes";
 import { colIndexToLetter } from "../../lib/cellRef";
-import {
-  extractPlaceholders,
-  type PlaceholderLocation,
-} from "../../lib/templatePlaceholders";
+import { extractPlaceholders, type PlaceholderLocation } from "../../lib/templatePlaceholders";
 
 const { Text } = Typography;
 
@@ -18,6 +16,7 @@ interface SheetGridProps {
 }
 
 function SheetGrid({ sheet, matchedLabels }: SheetGridProps) {
+  const { t } = useTranslation();
   const { rows, maxCol } = sheet;
 
   const placeholderCells = useMemo(() => {
@@ -62,9 +61,7 @@ function SheetGrid({ sheet, matchedLabels }: SheetGridProps) {
                 const allMatched =
                   placeholderNames.length > 0 &&
                   placeholderNames.every((n) => matchedLabels.has(n));
-                const someUnmatched = placeholderNames.some(
-                  (n) => !matchedLabels.has(n),
-                );
+                const someUnmatched = placeholderNames.some((n) => !matchedLabels.has(n));
 
                 const bg = isPlaceholder
                   ? allMatched
@@ -82,16 +79,10 @@ function SheetGrid({ sheet, matchedLabels }: SheetGridProps) {
                     {isPlaceholder ? (
                       <Tooltip
                         title={
-                          allMatched
-                            ? "Matched to a label"
-                            : "No matching label in Step 2"
+                          allMatched ? t("templatePreview.matched") : t("templatePreview.unmatched")
                         }
                       >
-                        <span
-                          className={
-                            allMatched ? "text-green-700" : "text-orange-600"
-                          }
-                        >
+                        <span className={allMatched ? "text-green-700" : "text-orange-600"}>
                           {val}
                         </span>
                       </Tooltip>
@@ -120,6 +111,8 @@ export default function TemplatePreview({
   dataViews,
   showLabelMappings = false,
 }: TemplatePreviewProps) {
+  const { t } = useTranslation();
+
   const allLabelNames = useMemo(() => {
     const s = new Set<string>();
     dataViews.forEach((dv) => dv.labels.forEach((l) => l.name && s.add(l.name)));
@@ -170,14 +163,10 @@ export default function TemplatePreview({
       {allPlaceholders.size > 0 && (
         <div className="flex flex-wrap gap-2 text-xs">
           {matched.map((name) => (
-            <Badge
-              key={name}
-              color="green"
-              text={<Text className="text-xs">{`{${name}}`}</Text>}
-            />
+            <Badge key={name} color="green" text={<Text className="text-xs">{`{${name}}`}</Text>} />
           ))}
           {unmatched.map((name) => (
-            <Tooltip key={name} title="No matching label defined in Step 2">
+            <Tooltip key={name} title={t("templatePreview.noMatchingLabel")}>
               <Badge
                 color="orange"
                 text={<Text className="text-xs text-orange-600">{`{${name}}`}</Text>}
@@ -189,7 +178,9 @@ export default function TemplatePreview({
 
       {showLabelMappings && mappedViews.length > 0 && (
         <div className="flex flex-col gap-3">
-          <Text strong className="text-sm">Label Mappings</Text>
+          <Text strong className="text-sm">
+            {t("templatePreview.labelMappings")}
+          </Text>
           <div className="grid gap-3 md:grid-cols-2">
             {mappedViews.map((dv) => (
               <div
@@ -197,19 +188,19 @@ export default function TemplatePreview({
                 className="border border-gray-200 rounded-md p-3 bg-white"
               >
                 <div className="flex items-center justify-between gap-3 mb-2">
-                  <Text strong>{dv.name || "Unnamed Data View"}</Text>
+                  <Text strong>{dv.name || t("templatePreview.unnamedDataView")}</Text>
                   <Text type="secondary" className="text-xs">
-                    {dv.dataSource || "No data source"}
+                    {dv.dataSource || t("templatePreview.noDataSource")}
                   </Text>
                 </div>
                 <table className="w-full border-collapse text-xs">
                   <thead>
                     <tr>
                       <th className="text-left text-gray-500 font-normal border-b border-gray-200 pb-1 pr-2">
-                        Label
+                        {t("templatePreview.label")}
                       </th>
                       <th className="text-left text-gray-500 font-normal border-b border-gray-200 pb-1">
-                        Column
+                        {t("templatePreview.column")}
                       </th>
                     </tr>
                   </thead>
@@ -224,7 +215,7 @@ export default function TemplatePreview({
                     ) : (
                       <tr>
                         <td colSpan={2} className="py-1 text-gray-400">
-                          No labels configured
+                          {t("templatePreview.noLabelsConfigured")}
                         </td>
                       </tr>
                     )}

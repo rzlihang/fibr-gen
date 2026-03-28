@@ -15,13 +15,9 @@ import {
 } from "antd";
 import { PlusOutlined, DeleteOutlined, FileExcelOutlined } from "@ant-design/icons";
 import { camelCase } from "lodash";
+import { useTranslation } from "react-i18next";
 import type { UploadFile } from "antd";
-import type {
-  WorkbookDef,
-  SheetDef,
-  BlockDef,
-  DataViewDef,
-} from "../../lib/configTypes";
+import type { WorkbookDef, SheetDef, BlockDef, DataViewDef } from "../../lib/configTypes";
 import { parseTemplate } from "../../api/template";
 import type { ParseTemplateResponse, ParsedSheet } from "../../api/template";
 import TemplatePreview from "./TemplatePreview";
@@ -43,52 +39,46 @@ interface WorkbookStepProps {
   onParsedTemplateChange: (data: ParseTemplateResponse | null) => void;
 }
 
-// Header blocks are only valid as matrix sub-blocks; top-level blocks use value/matrix only.
-const topLevelBlockTypeOptions = [
-  { label: "Value", value: "value" },
-  { label: "Matrix", value: "matrix" },
+const getTopLevelBlockTypeOptions = (t: ReturnType<typeof useTranslation>["t"]) => [
+  { label: t("builder.workbook.blockTypeValue"), value: "value" },
+  { label: t("builder.workbook.blockTypeMatrix"), value: "matrix" },
 ];
 
-// Inside a matrix's data sub-blocks, value and nested matrix are allowed.
-const dataSubBlockTypeOptions = [
-  { label: "Value", value: "value" },
-  { label: "Matrix (nested)", value: "matrix" },
+const getDataSubBlockTypeOptions = (t: ReturnType<typeof useTranslation>["t"]) => [
+  { label: t("builder.workbook.blockTypeValue"), value: "value" },
+  { label: t("builder.workbook.blockTypeNestedMatrix"), value: "matrix" },
 ];
 
-const directionOptions = [
-  { label: "Vertical", value: "vertical" },
-  { label: "Horizontal", value: "horizontal" },
+const getDirectionOptions = (t: ReturnType<typeof useTranslation>["t"]) => [
+  { label: t("builder.workbook.directionVertical"), value: "vertical" },
+  { label: t("builder.workbook.directionHorizontal"), value: "horizontal" },
 ];
 
-const defaultMatrixSubBlocks = (): BlockDef[] => [
+const defaultMatrixSubBlocks = (t: ReturnType<typeof useTranslation>["t"]): BlockDef[] => [
   {
-    name: "RowHeader",
+    name: t("builder.workbook.defaultRowHeaderName"),
     type: "header",
     direction: "vertical",
     insertAfter: true,
     range: { ref: "" },
   },
   {
-    name: "ColHeader",
+    name: t("builder.workbook.defaultColHeaderName"),
     type: "header",
     direction: "horizontal",
     range: { ref: "" },
   },
   {
-    name: "Data",
+    name: t("builder.workbook.defaultDataBlockName"),
     type: "value",
     template: true,
     range: { ref: "" },
   },
 ];
 
-function RangePreview({
-  rangeRef,
-  sheet,
-}: {
-  rangeRef: string;
-  sheet: ParsedSheet | undefined;
-}) {
+function RangePreview({ rangeRef, sheet }: { rangeRef: string; sheet: ParsedSheet | undefined }) {
+  const { t } = useTranslation();
+
   if (!sheet || !rangeRef.includes(":")) return null;
   const cells = getCellsInRange(sheet.rows, rangeRef);
   if (!cells || cells.length === 0) return null;
@@ -104,7 +94,7 @@ function RangePreview({
                   key={ci}
                   className="border border-gray-200 px-2 py-0.5 font-mono whitespace-nowrap"
                 >
-                  {cell || <span className="text-gray-300">empty</span>}
+                  {cell || <span className="text-gray-300">{t("common.empty")}</span>}
                 </td>
               ))}
             </tr>
@@ -129,30 +119,31 @@ function HeaderSubForm({
   sheetData: ParsedSheet | undefined;
   onChange: (b: BlockDef) => void;
 }) {
+  const { t } = useTranslation();
   const dvOptions = dataViews
     .filter((dv) => dv.name)
     .map((dv) => ({ label: dv.name, value: dv.name }));
   const hasRange = block.range.ref.trim() !== "";
   const selectedDataView = dataViews.find((dv) => dv.name === block.dataView);
-  const labelOptions = (block.dataView
-    ? selectedDataView?.labels.map((label) => ({
-        label: `${label.name} (${label.column})`,
-        value: label.name,
-        dataViewName: selectedDataView.name,
-        labelName: label.name,
-      })) ?? []
-    : dataViews.flatMap((dv) =>
-        dv.labels.map((label) => ({
-          label: `${dv.name} / ${label.name} (${label.column})`,
-          value: `${dv.name}::${label.name}`,
-          dataViewName: dv.name,
+  const labelOptions = (
+    block.dataView
+      ? (selectedDataView?.labels.map((label) => ({
+          label: `${label.name} (${label.column})`,
+          value: label.name,
+          dataViewName: selectedDataView.name,
           labelName: label.name,
-        })),
-      ))
-    .filter((option) => option.labelName && option.dataViewName);
+        })) ?? [])
+      : dataViews.flatMap((dv) =>
+          dv.labels.map((label) => ({
+            label: `${dv.name} / ${label.name} (${label.column})`,
+            value: `${dv.name}::${label.name}`,
+            dataViewName: dv.name,
+            labelName: label.name,
+          })),
+        )
+  ).filter((option) => option.labelName && option.dataViewName);
 
-  const update = (field: string, value: unknown) =>
-    onChange({ ...block, [field]: value });
+  const update = (field: string, value: unknown) => onChange({ ...block, [field]: value });
 
   const handleDataViewChange = (nextDataView: string | undefined) => {
     const dataViewName = nextDataView ?? "";
@@ -165,9 +156,7 @@ function HeaderSubForm({
     onChange({
       ...block,
       dataView: dataViewName,
-      labelVariable: availableLabels.has(block.labelVariable ?? "")
-        ? block.labelVariable
-        : "",
+      labelVariable: availableLabels.has(block.labelVariable ?? "") ? block.labelVariable : "",
     });
   };
 
@@ -188,43 +177,41 @@ function HeaderSubForm({
     <Card size="small" title={label} className="border-dashed">
       <Form layout="vertical" size="small">
         <div className="grid grid-cols-2 gap-x-4">
-          <Form.Item label="Name">
+          <Form.Item label={t("builder.workbook.blockName")}>
             <Input
-              placeholder="e.g. RowHeader"
+              placeholder={t("builder.workbook.headerBlockNamePlaceholder")}
               value={block.name}
               onChange={(e) => update("name", e.target.value)}
             />
           </Form.Item>
-          <Form.Item label="Range (ref)" required>
+          <Form.Item label={t("builder.workbook.rangeRef")} required>
             <Input
-              placeholder="e.g. A3:A3"
+              placeholder={t("builder.workbook.headerRangeRefPlaceholder")}
               value={block.range.ref}
               onChange={(e) => update("range", { ref: e.target.value })}
             />
             <RangePreview rangeRef={block.range.ref} sheet={sheetData} />
           </Form.Item>
-          <Form.Item label="Data View">
+          <Form.Item label={t("builder.workbook.dataViewOptional")}>
             <Select
               allowClear
-              placeholder="(optional)"
+              placeholder={t("builder.workbook.dataViewOptional")}
               options={dvOptions}
               value={block.dataView || undefined}
-              onChange={(v) =>
-                handleDataViewChange(typeof v === "string" ? v : undefined)
-              }
+              onChange={(v) => handleDataViewChange(typeof v === "string" ? v : undefined)}
             />
           </Form.Item>
           {hasRange && (
             <Form.Item
-              label="Label Variable"
+              label={t("builder.workbook.labelVariable")}
               required
               validateStatus={block.labelVariable ? "" : "error"}
               help={
                 block.labelVariable
                   ? undefined
                   : labelOptions.length > 0
-                    ? "Choose one of the label mappings from Data Setup."
-                    : "No label mappings available yet. Configure labels in Data Setup first."
+                    ? t("builder.workbook.chooseLabel")
+                    : t("builder.workbook.noLabelMappings")
               }
             >
               <Select
@@ -232,8 +219,8 @@ function HeaderSubForm({
                 allowClear
                 placeholder={
                   block.dataView
-                    ? "Select a label variable"
-                    : "Choose from existing label mappings"
+                    ? t("builder.workbook.selectLabel")
+                    : t("builder.workbook.chooseLabel")
                 }
                 options={labelOptions}
                 value={block.labelVariable || undefined}
@@ -251,11 +238,8 @@ function HeaderSubForm({
             </Form.Item>
           )}
         </div>
-        <Form.Item label="Insert After">
-          <Switch
-            checked={block.insertAfter ?? false}
-            onChange={(v) => update("insertAfter", v)}
-          />
+        <Form.Item label={t("builder.workbook.insertAfter")}>
+          <Switch checked={block.insertAfter ?? false} onChange={(v) => update("insertAfter", v)} />
         </Form.Item>
       </Form>
     </Card>
@@ -277,31 +261,30 @@ function BlockForm({
   onRemove: () => void;
   depth?: number;
 }) {
+  const { t } = useTranslation();
   const dvOptions = dataViews
     .filter((dv) => dv.name)
     .map((dv) => ({ label: dv.name, value: dv.name }));
+  const typeOptions = depth > 0 ? getDataSubBlockTypeOptions(t) : getTopLevelBlockTypeOptions(t);
+  const directionOptions = getDirectionOptions(t);
 
-  const typeOptions = depth > 0 ? dataSubBlockTypeOptions : topLevelBlockTypeOptions;
-
-  const updateBlock = (field: string, value: unknown) =>
-    onChange({ ...block, [field]: value });
+  const updateBlock = (field: string, value: unknown) => onChange({ ...block, [field]: value });
 
   const handleTypeChange = (newType: string) => {
     const base = { ...block, type: newType as BlockDef["type"] };
     if (newType === "matrix" && (!block.subBlocks || block.subBlocks.length === 0)) {
-      base.subBlocks = defaultMatrixSubBlocks();
+      base.subBlocks = defaultMatrixSubBlocks(t);
     }
     onChange(base);
   };
 
-  // For matrix: split sub-blocks into fixed headers and user-managed data blocks
   const subBlocks = block.subBlocks ?? [];
-  const rowHeader = subBlocks.find(
-    (s) => s.type === "header" && s.direction === "vertical",
-  ) ?? defaultMatrixSubBlocks()[0];
-  const colHeader = subBlocks.find(
-    (s) => s.type === "header" && s.direction === "horizontal",
-  ) ?? defaultMatrixSubBlocks()[1];
+  const rowHeader =
+    subBlocks.find((s) => s.type === "header" && s.direction === "vertical") ??
+    defaultMatrixSubBlocks(t)[0];
+  const colHeader =
+    subBlocks.find((s) => s.type === "header" && s.direction === "horizontal") ??
+    defaultMatrixSubBlocks(t)[1];
   const dataBlocks = subBlocks.filter((s) => s.type !== "header");
 
   const updateHeader = (direction: "vertical" | "horizontal", updated: BlockDef) => {
@@ -320,11 +303,7 @@ function BlockForm({
     const headers = subBlocks.filter((s) => s.type === "header");
     onChange({
       ...block,
-      subBlocks: [
-        ...headers,
-        ...dataBlocks,
-        { name: "", type: "value", range: { ref: "" } },
-      ],
+      subBlocks: [...headers, ...dataBlocks, { name: "", type: "value", range: { ref: "" } }],
     });
   };
 
@@ -340,39 +319,33 @@ function BlockForm({
     <Card
       size="small"
       className={depth > 0 ? "border-dashed" : ""}
-      title={block.name || "Unnamed Block"}
-      extra={
-        <Button type="text" danger icon={<DeleteOutlined />} onClick={onRemove} />
-      }
+      title={block.name || t("builder.workbook.unnamedBlock")}
+      extra={<Button type="text" danger icon={<DeleteOutlined />} onClick={onRemove} />}
     >
       <Form layout="vertical" size="small">
         <div className="grid grid-cols-2 gap-x-4">
-          <Form.Item label="Name" required>
+          <Form.Item label={t("builder.workbook.blockName")} required>
             <Input
-              placeholder="e.g. DataBlock1"
+              placeholder={t("builder.workbook.blockNamePlaceholder")}
               value={block.name}
               onChange={(e) => updateBlock("name", e.target.value)}
             />
           </Form.Item>
-          <Form.Item label="Type" required>
-            <Select
-              options={typeOptions}
-              value={block.type}
-              onChange={handleTypeChange}
-            />
+          <Form.Item label={t("builder.workbook.type")} required>
+            <Select options={typeOptions} value={block.type} onChange={handleTypeChange} />
           </Form.Item>
-          <Form.Item label="Range (ref)" required>
+          <Form.Item label={t("builder.workbook.rangeRef")} required>
             <Input
-              placeholder="e.g. A1:B5"
+              placeholder={t("builder.workbook.rangeRefPlaceholder")}
               value={block.range.ref}
               onChange={(e) => updateBlock("range", { ref: e.target.value })}
             />
             <RangePreview rangeRef={block.range.ref} sheet={sheetData} />
           </Form.Item>
-          <Form.Item label="Data View">
+          <Form.Item label={t("builder.workbook.dataViewOptional")}>
             <Select
               allowClear
-              placeholder="(optional)"
+              placeholder={t("builder.workbook.dataViewOptional")}
               options={dvOptions}
               value={block.dataView || undefined}
               onChange={(v) => updateBlock("dataView", v ?? "")}
@@ -382,32 +355,32 @@ function BlockForm({
 
         {block.type === "value" && (
           <>
-            <Form.Item label="Direction">
+            <Form.Item label={t("builder.workbook.direction")}>
               <Select
                 options={directionOptions}
                 value={block.direction || undefined}
                 onChange={(v) => updateBlock("direction", v)}
-                placeholder="(optional)"
+                placeholder={t("builder.workbook.directionPlaceholder")}
                 allowClear
               />
             </Form.Item>
             <div className="grid grid-cols-3 gap-x-4">
-              <Form.Item label="Row Limit">
+              <Form.Item label={t("builder.workbook.rowLimit")}>
                 <InputNumber
                   min={0}
-                  placeholder="0 = no limit"
+                  placeholder={t("builder.workbook.rowLimitPlaceholder")}
                   value={block.rowLimit ?? undefined}
                   onChange={(v) => updateBlock("rowLimit", v ?? 0)}
                   className="w-full"
                 />
               </Form.Item>
-              <Form.Item label="Insert After">
+              <Form.Item label={t("builder.workbook.insertAfter")}>
                 <Switch
                   checked={block.insertAfter ?? false}
                   onChange={(v) => updateBlock("insertAfter", v)}
                 />
               </Form.Item>
-              <Form.Item label="Template">
+              <Form.Item label={t("builder.workbook.template")}>
                 <Switch
                   checked={block.template ?? false}
                   onChange={(v) => updateBlock("template", v)}
@@ -419,25 +392,29 @@ function BlockForm({
 
         {block.type === "matrix" && (
           <div className="flex flex-col gap-3 mt-2">
-            <Text strong>Row Header (vertical axis)</Text>
+            <Text strong>{t("builder.workbook.rowHeader")}</Text>
             <HeaderSubForm
-              label="Row Header"
+              label={t("builder.workbook.rowHeader")}
               block={rowHeader}
               dataViews={dataViews}
               sheetData={sheetData}
-              onChange={(updated) => updateHeader("vertical", { ...updated, type: "header", direction: "vertical" })}
+              onChange={(updated) =>
+                updateHeader("vertical", { ...updated, type: "header", direction: "vertical" })
+              }
             />
 
-            <Text strong>Column Header (horizontal axis)</Text>
+            <Text strong>{t("builder.workbook.colHeader")}</Text>
             <HeaderSubForm
-              label="Column Header"
+              label={t("builder.workbook.colHeader")}
               block={colHeader}
               dataViews={dataViews}
               sheetData={sheetData}
-              onChange={(updated) => updateHeader("horizontal", { ...updated, type: "header", direction: "horizontal" })}
+              onChange={(updated) =>
+                updateHeader("horizontal", { ...updated, type: "header", direction: "horizontal" })
+              }
             />
 
-            <Text strong>Data Blocks</Text>
+            <Text strong>{t("builder.workbook.dataBlocks")}</Text>
             <div className="flex flex-col gap-2">
               {dataBlocks.map((sub, idx) => (
                 <BlockForm
@@ -450,13 +427,8 @@ function BlockForm({
                   depth={depth + 1}
                 />
               ))}
-              <Button
-                type="dashed"
-                size="small"
-                icon={<PlusOutlined />}
-                onClick={addDataBlock}
-              >
-                Add Data Block
+              <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addDataBlock}>
+                {t("builder.workbook.addDataBlock")}
               </Button>
             </div>
           </div>
@@ -477,6 +449,7 @@ export default function WorkbookStep({
   onTemplateChange,
   onParsedTemplateChange,
 }: WorkbookStepProps) {
+  const { t } = useTranslation();
   const [parsing, setParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
 
@@ -496,7 +469,6 @@ export default function WorkbookStep({
     try {
       const result = await parseTemplate(file);
       onParsedTemplateChange(result);
-      // Auto-populate sheets from template if still at default
       const isDefault =
         workbook.sheets.length === 1 &&
         (workbook.sheets[0].name === "" || workbook.sheets[0].name === "Sheet1") &&
@@ -509,7 +481,7 @@ export default function WorkbookStep({
         });
       }
     } catch (err) {
-      setParseError(err instanceof Error ? err.message : "Failed to parse template");
+      setParseError(err instanceof Error ? err.message : t("builder.workbook.parsing"));
       onParsedTemplateChange(null);
     } finally {
       setParsing(false);
@@ -536,11 +508,7 @@ export default function WorkbookStep({
     });
   };
 
-  const updateBlockInSheet = (
-    sheetIdx: number,
-    blockIdx: number,
-    block: BlockDef,
-  ) => {
+  const updateBlockInSheet = (sheetIdx: number, blockIdx: number, block: BlockDef) => {
     const sheets = [...workbook.sheets];
     const blocks = [...sheets[sheetIdx].blocks];
     blocks[blockIdx] = block;
@@ -552,10 +520,7 @@ export default function WorkbookStep({
     const sheets = [...workbook.sheets];
     sheets[sheetIdx] = {
       ...sheets[sheetIdx],
-      blocks: [
-        ...sheets[sheetIdx].blocks,
-        { name: "", type: "value", range: { ref: "" } },
-      ],
+      blocks: [...sheets[sheetIdx].blocks, { name: "", type: "value", range: { ref: "" } }],
     };
     onChange({ ...workbook, sheets });
   };
@@ -571,11 +536,11 @@ export default function WorkbookStep({
 
   return (
     <div className="flex flex-col gap-4">
-      <Card size="small" title="Workbook Settings">
+      <Card size="small" title={t("builder.workbook.settings")}>
         <Form layout="vertical" size="small">
-          <Form.Item label="Workbook Name" required>
+          <Form.Item label={t("builder.workbook.workbookName")} required>
             <Input
-              placeholder="e.g. Monthly Report"
+              placeholder={t("builder.workbook.workbookNamePlaceholder")}
               value={workbook.name}
               onChange={(e) => {
                 const name = e.target.value;
@@ -583,7 +548,7 @@ export default function WorkbookStep({
               }}
             />
           </Form.Item>
-          <Form.Item label="Template File (.xlsx)" required>
+          <Form.Item label={t("builder.workbook.templateFile")} required>
             <Dragger
               accept=".xlsx"
               maxCount={1}
@@ -599,7 +564,7 @@ export default function WorkbookStep({
                   : []
               }
               beforeUpload={(file) => {
-                handleTemplateUpload(file);
+                void handleTemplateUpload(file);
                 return false;
               }}
               onRemove={() => {
@@ -611,16 +576,14 @@ export default function WorkbookStep({
               <p className="text-2xl text-gray-400">
                 <FileExcelOutlined />
               </p>
-              <Text className="text-xs">
-                Drop your Excel template here or click to browse
-              </Text>
+              <Text className="text-xs">{t("builder.workbook.dropTemplate")}</Text>
             </Dragger>
           </Form.Item>
         </Form>
 
         {parsing && (
           <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
-            <Spin size="small" /> Parsing template...
+            <Spin size="small" /> {t("builder.workbook.parsing")}
           </div>
         )}
         {parseError && (
@@ -635,7 +598,9 @@ export default function WorkbookStep({
         )}
         {parsedTemplate && (
           <div className="mt-4">
-            <Text strong className="text-sm">Template Preview</Text>
+            <Text strong className="text-sm">
+              {t("builder.workbook.templatePreview")}
+            </Text>
             <div className="mt-2">
               <TemplatePreview
                 sheets={parsedTemplate.sheets}
@@ -648,8 +613,8 @@ export default function WorkbookStep({
         {parsedTemplate && placeholderStatus.unmatched.length > 0 && (
           <Alert
             type="warning"
-            message="Unmatched Template Placeholders"
-            description={`Add mappings for these labels in Data Setup before continuing: ${placeholderStatus.unmatched.join(", ")}`}
+            message={t("builder.workbook.unmatchedPlaceholders")}
+            description={`${t("builder.workbook.unmatchedDesc")}: ${placeholderStatus.unmatched.join(", ")}`}
             showIcon
             className="mt-4"
           />
@@ -657,13 +622,11 @@ export default function WorkbookStep({
         {headerLabelVariableIssues.length > 0 && (
           <Alert
             type="warning"
-            message="Header Label Variable Required"
+            message={t("builder.workbook.headerLabelRequired")}
             description={
               <div className="text-sm">
-                <div>Choose a Label Variable for each configured header block:</div>
-                <div className="mt-1">
-                  {headerLabelVariableIssues.join("; ")}
-                </div>
+                <div>{t("builder.workbook.headerLabelDesc")}</div>
+                <div className="mt-1">{headerLabelVariableIssues.join("; ")}</div>
               </div>
             }
             showIcon
@@ -673,18 +636,16 @@ export default function WorkbookStep({
       </Card>
 
       <Text strong className="text-base">
-        Sheets
+        {t("builder.workbook.sheets")}
       </Text>
 
       <Collapse
         accordion
         items={workbook.sheets.map((sheet, sIdx) => {
-          const sheetData = parsedTemplate?.sheets.find(
-            (s) => s.name === sheet.name,
-          );
+          const sheetData = parsedTemplate?.sheets.find((s) => s.name === sheet.name);
           return {
             key: String(sIdx),
-            label: sheet.name || `Sheet ${sIdx + 1}`,
+            label: sheet.name || t("builder.workbook.sheetNumber", { number: sIdx + 1 }),
             extra: (
               <Button
                 type="text"
@@ -702,54 +663,49 @@ export default function WorkbookStep({
                 {sheetData && (
                   <div>
                     <Text type="secondary" className="text-xs">
-                      Template cells ({sheetData.maxRow} rows ×{" "}
+                      {t("builder.workbook.templateCells")} ({sheetData.maxRow} rows ×{" "}
                       {colIndexToLetter(sheetData.maxCol - 1)} cols)
                     </Text>
                     <div className="mt-1">
-                      <TemplatePreview
-                        sheets={[sheetData]}
-                        dataViews={dataViews}
-                      />
+                      <TemplatePreview sheets={[sheetData]} dataViews={dataViews} />
                     </div>
                   </div>
                 )}
                 <Form layout="vertical" size="small">
-                  <Form.Item label="Sheet Name" required>
+                  <Form.Item label={t("builder.workbook.sheetName")} required>
                     <Input
-                      placeholder="e.g. Sheet1"
+                      placeholder={t("builder.workbook.sheetNamePlaceholder")}
                       value={sheet.name}
-                      onChange={(e) =>
-                        updateSheet(sIdx, { ...sheet, name: e.target.value })
-                      }
+                      onChange={(e) => updateSheet(sIdx, { ...sheet, name: e.target.value })}
                     />
                   </Form.Item>
                   <div className="flex gap-4">
-                    <Form.Item label="Dynamic">
+                    <Form.Item label={t("builder.workbook.dynamic")}>
                       <Switch
                         checked={sheet.dynamic ?? false}
-                        onChange={(v) =>
-                          updateSheet(sIdx, { ...sheet, dynamic: v })
-                        }
+                        onChange={(v) => updateSheet(sIdx, { ...sheet, dynamic: v })}
                       />
                     </Form.Item>
                     {sheet.dynamic && (
                       <>
-                        <Form.Item label="Data View" required className="flex-1">
+                        <Form.Item
+                          label={t("builder.workbook.dataView")}
+                          required
+                          className="flex-1"
+                        >
                           <Select
                             options={dvOptions}
                             value={sheet.dataView || undefined}
-                            onChange={(v) =>
-                              updateSheet(sIdx, { ...sheet, dataView: v })
-                            }
+                            onChange={(v) => updateSheet(sIdx, { ...sheet, dataView: v })}
                           />
                         </Form.Item>
                         <Form.Item
-                          label="Param Label"
+                          label={t("builder.workbook.paramLabel")}
                           required
                           className="flex-1"
                         >
                           <Input
-                            placeholder="e.g. month_label"
+                            placeholder={t("builder.workbook.paramLabelPlaceholder")}
                             value={sheet.paramLabel ?? ""}
                             onChange={(e) =>
                               updateSheet(sIdx, {
@@ -764,7 +720,7 @@ export default function WorkbookStep({
                   </div>
                 </Form>
 
-                <Text strong>Blocks</Text>
+                <Text strong>{t("builder.workbook.blocks")}</Text>
                 <div className="flex flex-col gap-2">
                   {sheet.blocks.map((block, bIdx) => (
                     <BlockForm
@@ -772,9 +728,7 @@ export default function WorkbookStep({
                       block={block}
                       dataViews={dataViews}
                       sheetData={sheetData}
-                      onChange={(updated) =>
-                        updateBlockInSheet(sIdx, bIdx, updated)
-                      }
+                      onChange={(updated) => updateBlockInSheet(sIdx, bIdx, updated)}
                       onRemove={() => removeBlockFromSheet(sIdx, bIdx)}
                     />
                   ))}
@@ -783,7 +737,7 @@ export default function WorkbookStep({
                     icon={<PlusOutlined />}
                     onClick={() => addBlockToSheet(sIdx)}
                   >
-                    Add Block
+                    {t("builder.workbook.addBlock")}
                   </Button>
                 </div>
               </div>
@@ -793,7 +747,7 @@ export default function WorkbookStep({
       />
 
       <Button type="dashed" icon={<PlusOutlined />} onClick={addSheet} block>
-        Add Sheet
+        {t("builder.workbook.addSheet")}
       </Button>
     </div>
   );

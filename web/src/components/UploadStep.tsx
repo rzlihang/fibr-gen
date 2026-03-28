@@ -1,9 +1,6 @@
 import { Upload, Typography } from "antd";
-import {
-  FileExcelOutlined,
-  FileTextOutlined,
-  SettingOutlined,
-} from "@ant-design/icons";
+import { FileExcelOutlined, FileTextOutlined, SettingOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import type { UploadFile } from "antd";
 
 const { Dragger } = Upload;
@@ -21,11 +18,13 @@ interface UploadStepProps {
 }
 
 export default function UploadStep({ files, onChange }: UploadStepProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div>
         <Title level={5} className="m-0 mb-3">
-          Config Bundle (.yaml)
+          {t("upload.configBundle")}
         </Title>
         <Dragger
           accept=".yaml,.yml"
@@ -53,13 +52,13 @@ export default function UploadStep({ files, onChange }: UploadStepProps) {
           <p className="text-3xl text-gray-400">
             <SettingOutlined />
           </p>
-          <Text>Click or drag your config YAML file here</Text>
+          <Text>{t("upload.configBundleDesc")}</Text>
         </Dragger>
       </div>
 
       <div>
         <Title level={5} className="m-0 mb-3">
-          Template (.xlsx)
+          {t("upload.template")}
         </Title>
         <Dragger
           accept=".xlsx"
@@ -87,13 +86,13 @@ export default function UploadStep({ files, onChange }: UploadStepProps) {
           <p className="text-3xl text-gray-400">
             <FileExcelOutlined />
           </p>
-          <Text>Click or drag your Excel template here</Text>
+          <Text>{t("upload.templateDesc")}</Text>
         </Dragger>
       </div>
 
       <div>
         <Title level={5} className="m-0 mb-3">
-          Data Files (.csv)
+          {t("upload.dataFiles")}
         </Title>
         <Dragger
           accept=".csv"
@@ -117,7 +116,7 @@ export default function UploadStep({ files, onChange }: UploadStepProps) {
           <p className="text-3xl text-gray-400">
             <FileTextOutlined />
           </p>
-          <Text>Click or drag CSV data files here (one per data view)</Text>
+          <Text>{t("upload.dataFilesDesc")}</Text>
         </Dragger>
       </div>
     </div>

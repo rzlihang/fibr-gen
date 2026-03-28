@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { Button, Typography, message, Alert, Space } from "antd";
-import {
-  CopyOutlined,
-  DownloadOutlined,
-  SendOutlined,
-} from "@ant-design/icons";
+import { CopyOutlined, DownloadOutlined, SendOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { generateReport, downloadBlob } from "../../api/generate";
 
 const { Title, Text } = Typography;
@@ -27,6 +24,7 @@ export default function YamlPreviewStep({
   templateFile,
   preparedDataFiles = [],
 }: YamlPreviewStepProps) {
+  const { t } = useTranslation();
   const dataFiles = preparedDataFiles
     .map((item) => item.file)
     .filter((file): file is File => file !== null);
@@ -36,7 +34,7 @@ export default function YamlPreviewStep({
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(yamlContent);
-    message.success("YAML copied to clipboard");
+    message.success(t("messages.yamlCopied"));
   };
 
   const handleDownloadYaml = () => {
@@ -46,7 +44,7 @@ export default function YamlPreviewStep({
 
   const handleGenerate = async () => {
     if (!templateFile || dataFiles.length === 0 || missingFiles.length > 0) {
-      message.error("Please upload both a template and data files");
+      message.error(t("messages.uploadTemplateAndData"));
       return;
     }
 
@@ -66,11 +64,9 @@ export default function YamlPreviewStep({
 
       const name = templateFile.name.replace(/\.xlsx$/, "");
       downloadBlob(blob, `${name}_output.xlsx`);
-      message.success("Report generated and downloaded!");
+      message.success(t("messages.reportGenerated"));
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred",
-      );
+      setError(err instanceof Error ? err.message : t("messages.unknownError"));
     } finally {
       setLoading(false);
     }
@@ -81,18 +77,14 @@ export default function YamlPreviewStep({
       <div>
         <div className="flex justify-between items-center mb-2">
           <Title level={5} className="mb-0!">
-            Generated YAML
+            {t("builder.preview.generatedYaml")}
           </Title>
           <Space>
             <Button size="small" icon={<CopyOutlined />} onClick={handleCopy}>
-              Copy
+              {t("builder.preview.copy")}
             </Button>
-            <Button
-              size="small"
-              icon={<DownloadOutlined />}
-              onClick={handleDownloadYaml}
-            >
-              Download
+            <Button size="small" icon={<DownloadOutlined />} onClick={handleDownloadYaml}>
+              {t("builder.preview.download")}
             </Button>
           </Space>
         </div>
@@ -102,13 +94,21 @@ export default function YamlPreviewStep({
       </div>
 
       <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-sm flex flex-col gap-1">
-        <Title level={5} className="mb-2!">Files</Title>
+        <Title level={5} className="mb-2!">
+          {t("builder.preview.files")}
+        </Title>
         <div>
-          <Text type="secondary">Template: </Text>
-          <Text>{templateFile ? templateFile.name : <Text type="danger">No template uploaded (go back to step 3)</Text>}</Text>
+          <Text type="secondary">{t("builder.preview.template")}: </Text>
+          <Text>
+            {templateFile ? (
+              templateFile.name
+            ) : (
+              <Text type="danger">{t("builder.preview.noTemplate")}</Text>
+            )}
+          </Text>
         </div>
         <div>
-          <Text type="secondary">Data files: </Text>
+          <Text type="secondary">{t("builder.preview.dataFilesLabel")}: </Text>
           {preparedDataFiles.length > 0 ? (
             <div className="mt-1 flex flex-col gap-1">
               {preparedDataFiles.map((item) => (
@@ -129,7 +129,7 @@ export default function YamlPreviewStep({
               ))}
             </div>
           ) : (
-            <Text type="danger">No data files uploaded (go back to step 1)</Text>
+            <Text type="danger">{t("builder.preview.noDataFiles")}</Text>
           )}
         </div>
       </div>
@@ -137,14 +137,21 @@ export default function YamlPreviewStep({
       {missingFiles.length > 0 && (
         <Alert
           type="warning"
-          message="Missing Data Files"
-          description="Some data views do not have an uploaded CSV mapped to them. Go back to Step 1 or Step 2 and fix the mapping before generating."
+          message={t("builder.preview.missingDataFiles")}
+          description={t("builder.preview.missingDesc")}
           showIcon
         />
       )}
 
       {error && (
-        <Alert type="error" message="Generation Failed" description={error} showIcon closable onClose={() => setError(null)} />
+        <Alert
+          type="error"
+          message={t("result.failed")}
+          description={error}
+          showIcon
+          closable
+          onClose={() => setError(null)}
+        />
       )}
 
       <Button
@@ -156,7 +163,7 @@ export default function YamlPreviewStep({
         onClick={handleGenerate}
         block
       >
-        Generate Report
+        {t("builder.preview.generateReport")}
       </Button>
     </div>
   );

@@ -1,0 +1,186 @@
+{
+  "app": {
+    "title": "fibr-gen",
+    "subtitle": "從範本與資料產生 Excel 報表"
+  },
+  "nav": {
+    "uploadFiles": "上傳檔案",
+    "buildConfig": "建立設定",
+    "docs": "說明",
+    "uploadFilesDesc": "直接上傳設定 YAML、Excel 範本與 CSV 資料檔",
+    "buildConfigDesc": "透過逐步精靈互動式建立設定"
+  },
+  "generate": {
+    "title": "fibr-gen 報表產生器",
+    "steps": {
+      "upload": "上傳",
+      "uploadDesc": "範本、設定與資料",
+      "review": "確認",
+      "reviewDesc": "驗證檔案與參數",
+      "result": "結果",
+      "resultDesc": "下載報表"
+    },
+    "alertTemporary": {
+      "title": "變更將不會被儲存",
+      "desc": "您在此上傳的檔案與參數為暫時性，不會被儲存。請在關閉頁面前下載您的報表。"
+    },
+    "buttons": {
+      "back": "上一步",
+      "next": "下一步",
+      "generateReport": "產生報表"
+    }
+  },
+  "upload": {
+    "configBundle": "設定包 (.yaml)",
+    "configBundleDesc": "點擊或拖曳設定 YAML 檔至此",
+    "template": "範本 (.xlsx)",
+    "templateDesc": "點擊或拖曳 Excel 範本至此",
+    "dataFiles": "資料檔 (.csv)",
+    "dataFilesDesc": "點擊或拖曳 CSV 資料檔至此（每個資料檢視一個）"
+  },
+  "review": {
+    "config": "設定",
+    "template": "範本",
+    "dataFiles": "資料檔",
+    "notUploaded": "尚未上傳",
+    "noFilesUploaded": "未上傳任何檔案",
+    "extraParams": "額外參數（選填 JSON）",
+    "extraParamsPlaceholder": "{\"env\": \"prod\", \"archive_date\": \"2026-03-28\"}",
+    "invalidJson": "必須是有效的 JSON 物件"
+  },
+  "result": {
+    "generating": "正在產生報表...",
+    "generatingSubtitle": "依資料量大小可能需要一點時間。",
+    "failed": "產生失敗",
+    "success": "報表已產生！",
+    "tryAgain": "重試",
+    "downloadReport": "下載報表",
+    "generateAnother": "再次產生"
+  },
+  "builder": {
+    "title": "設定建置器",
+    "steps": {
+      "dataSetup": "資料設定",
+      "dataSetupDesc": "上傳 CSV 並對應欄位",
+      "workbook": "活頁簿",
+      "workbookDesc": "工作表與區塊",
+      "preview": "預覽與產生",
+      "previewDesc": "檢視 YAML"
+    },
+    "dataSources": {
+      "title": "資料來源",
+      "titleDesc": "請先上傳 CSV 檔，以便在下一步自動偵測可用欄位。",
+      "csvFile": "CSV 檔案",
+      "dropCsv": "將 CSV 檔拖曳至此或點擊瀏覽",
+      "columnsDetected": "已偵測到的欄位 (Columns)",
+      "name": "名稱",
+      "namePlaceholder": "例：local_csv（自動從檔名填入）",
+      "nameRequired": "名稱為必填",
+      "addDataSource": "新增資料來源"
+    },
+    "dataViews": {
+      "title": "資料檢視",
+      "titleDesc": "在此定義標籤，讓下一步的活頁簿設定能直接參照。",
+      "name": "名稱",
+      "namePlaceholder": "例：employee_view",
+      "dataSource": "資料來源",
+      "selectDataSource": "選擇資料來源",
+      "labels": "標籤（欄位對應）",
+      "mapAllColumns": "對應所有欄位 (Map All)",
+      "labelName": "標籤名稱",
+      "columnName": "欄位名稱 (Column)",
+      "addLabel": "新增標籤",
+      "addDataView": "新增資料檢視"
+    },
+    "workbook": {
+      "settings": "活頁簿設定",
+      "workbookName": "活頁簿名稱",
+      "workbookNamePlaceholder": "例：Monthly Report",
+      "templateFile": "範本檔 (.xlsx)",
+      "dropTemplate": "將 Excel 範本拖曳至此或點擊瀏覽",
+      "parsing": "正在解析範本...",
+      "templatePreview": "範本預覽",
+      "unmatchedPlaceholders": "未對應的範本預留位置",
+      "unmatchedDesc": "請在「資料設定」中為這些標籤新增對應後再繼續",
+      "headerLabelRequired": "標題標籤變數為必填",
+      "headerLabelDesc": "請為每個已設定的標題區塊選擇標籤變數",
+      "sheets": "工作表",
+      "sheetName": "工作表名稱",
+      "sheetNamePlaceholder": "例：Sheet1",
+      "dynamic": "動態",
+      "dataView": "資料檢視",
+      "paramLabel": "參數標籤",
+      "paramLabelPlaceholder": "例：month_label",
+      "blocks": "區塊",
+      "blockName": "名稱",
+      "blockNamePlaceholder": "例：DataBlock1",
+      "headerBlockNamePlaceholder": "例：RowHeader",
+      "type": "類型",
+      "blockTypeValue": "值",
+      "blockTypeMatrix": "矩陣",
+      "blockTypeNestedMatrix": "矩陣（巢狀）",
+      "rangeRef": "範圍 (Range ref)",
+      "rangeRefPlaceholder": "例：A1:B5",
+      "headerRangeRefPlaceholder": "例：A3:A3",
+      "dataViewOptional": "資料檢視（選填）",
+      "direction": "方向",
+      "directionVertical": "垂直（列方向 / Vertical）",
+      "directionHorizontal": "水平（行方向 / Horizontal）",
+      "directionPlaceholder": "（選填）",
+      "rowLimit": "列數限制 (Row Limit)",
+      "rowLimitPlaceholder": "0 = 不限制",
+      "insertAfter": "向後插入 (Insert After)",
+      "template": "範本",
+      "rowHeader": "列標題（垂直軸 / Row Header）",
+      "colHeader": "行標題（水平軸 / Column Header）",
+      "dataBlocks": "資料區塊",
+      "labelVariable": "標籤變數",
+      "selectLabel": "選擇標籤變數",
+      "chooseLabel": "從現有標籤對應中選擇",
+      "noLabelMappings": "尚無可用標籤對應，請先在「資料設定」中設定標籤。",
+      "addBlock": "新增區塊",
+      "addSheet": "新增工作表",
+      "addDataBlock": "新增資料區塊",
+      "defaultRowHeaderName": "RowHeader",
+      "defaultColHeaderName": "ColHeader",
+      "defaultDataBlockName": "Data",
+      "unnamedBlock": "未命名區塊",
+      "sheetNumber": "工作表 {{number}}",
+      "templateCells": "範本儲存格"
+    },
+    "preview": {
+      "generatedYaml": "產生的 YAML",
+      "copy": "複製",
+      "download": "下載",
+      "files": "檔案",
+      "template": "範本",
+      "noTemplate": "尚未上傳範本（請返回第 3 步）",
+      "dataFilesLabel": "資料檔",
+      "noDataFiles": "尚未上傳資料檔（請返回第 1 步）",
+      "missingDataFiles": "缺少資料檔",
+      "missingDesc": "部分資料檢視沒有對應的 CSV 檔。請返回第 1 步或第 2 步修正對應後再產生。",
+      "generateReport": "產生報表"
+    }
+  },
+  "messages": {
+    "downloadStarted": "下載已開始",
+    "yamlCopied": "YAML 已複製到剪貼簿",
+    "reportGenerated": "報表已產生並下載！",
+    "uploadTemplateAndData": "請上傳範本及資料檔",
+    "unknownError": "發生未知錯誤"
+  },
+  "common": {
+    "empty": "空白"
+  },
+  "templatePreview": {
+    "matched": "已對應到標籤",
+    "unmatched": "在第 2 步找不到對應標籤",
+    "noMatchingLabel": "第 2 步中沒有定義對應的標籤",
+    "labelMappings": "標籤對應",
+    "unnamedDataView": "未命名資料檢視",
+    "noDataSource": "無資料來源",
+    "label": "標籤",
+    "column": "欄位 (Column)",
+    "noLabelsConfigured": "尚未設定任何標籤"
+  }
+}

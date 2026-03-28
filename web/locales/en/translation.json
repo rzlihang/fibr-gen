@@ -1,0 +1,186 @@
+{
+  "app": {
+    "title": "fibr-gen",
+    "subtitle": "Generate Excel reports from templates and data"
+  },
+  "nav": {
+    "uploadFiles": "Upload Files",
+    "buildConfig": "Build Config",
+    "docs": "Docs",
+    "uploadFilesDesc": "Upload your config YAML, Excel template, and CSV data files directly",
+    "buildConfigDesc": "Create your configuration interactively with a step-by-step wizard"
+  },
+  "generate": {
+    "title": "fibr-gen Report Generator",
+    "steps": {
+      "upload": "Upload",
+      "uploadDesc": "Template, config & data",
+      "review": "Review",
+      "reviewDesc": "Verify files & params",
+      "result": "Result",
+      "resultDesc": "Download report"
+    },
+    "alertTemporary": {
+      "title": "Changes will not be saved",
+      "desc": "The files and parameters you upload here are temporary and will not be saved. Download your report before closing this page."
+    },
+    "buttons": {
+      "back": "Back",
+      "next": "Next",
+      "generateReport": "Generate Report"
+    }
+  },
+  "upload": {
+    "configBundle": "Config Bundle (.yaml)",
+    "configBundleDesc": "Click or drag your config YAML file here",
+    "template": "Template (.xlsx)",
+    "templateDesc": "Click or drag your Excel template here",
+    "dataFiles": "Data Files (.csv)",
+    "dataFilesDesc": "Click or drag CSV data files here (one per data view)"
+  },
+  "review": {
+    "config": "Config",
+    "template": "Template",
+    "dataFiles": "Data Files",
+    "notUploaded": "Not uploaded",
+    "noFilesUploaded": "No files uploaded",
+    "extraParams": "Extra Parameters (optional JSON)",
+    "extraParamsPlaceholder": "{\"env\": \"prod\", \"archive_date\": \"2026-03-28\"}",
+    "invalidJson": "Must be a valid JSON object"
+  },
+  "result": {
+    "generating": "Generating Report...",
+    "generatingSubtitle": "This may take a moment depending on data size.",
+    "failed": "Generation Failed",
+    "success": "Report Generated!",
+    "tryAgain": "Try Again",
+    "downloadReport": "Download Report",
+    "generateAnother": "Generate Another"
+  },
+  "builder": {
+    "title": "Config Builder",
+    "steps": {
+      "dataSetup": "Data Setup",
+      "dataSetupDesc": "Upload CSVs & map columns",
+      "workbook": "Workbook",
+      "workbookDesc": "Sheets & blocks",
+      "preview": "Preview & Generate",
+      "previewDesc": "Review YAML"
+    },
+    "dataSources": {
+      "title": "Data Sources",
+      "titleDesc": "Upload the CSV files first so the next section can use their detected columns.",
+      "csvFile": "CSV File",
+      "dropCsv": "Drop a CSV file here or click to browse",
+      "columnsDetected": "Columns detected",
+      "name": "Name",
+      "namePlaceholder": "e.g. local_csv (auto-filled from filename)",
+      "nameRequired": "Name is required",
+      "addDataSource": "Add Data Source"
+    },
+    "dataViews": {
+      "title": "Data Views",
+      "titleDesc": "Define the labels here so Workbook configuration can reference them directly in the next step.",
+      "name": "Name",
+      "namePlaceholder": "e.g. employee_view",
+      "dataSource": "Data Source",
+      "selectDataSource": "Select a data source",
+      "labels": "Labels (column mappings)",
+      "mapAllColumns": "Map All Columns",
+      "labelName": "Label name",
+      "columnName": "Column name",
+      "addLabel": "Add Label",
+      "addDataView": "Add Data View"
+    },
+    "workbook": {
+      "settings": "Workbook Settings",
+      "workbookName": "Workbook Name",
+      "workbookNamePlaceholder": "e.g. Monthly Report",
+      "templateFile": "Template File (.xlsx)",
+      "dropTemplate": "Drop your Excel template here or click to browse",
+      "parsing": "Parsing template...",
+      "templatePreview": "Template Preview",
+      "unmatchedPlaceholders": "Unmatched Template Placeholders",
+      "unmatchedDesc": "Add mappings for these labels in Data Setup before continuing",
+      "headerLabelRequired": "Header Label Variable Required",
+      "headerLabelDesc": "Choose a Label Variable for each configured header block",
+      "sheets": "Sheets",
+      "sheetName": "Sheet Name",
+      "sheetNamePlaceholder": "e.g. Sheet1",
+      "dynamic": "Dynamic",
+      "dataView": "Data View",
+      "paramLabel": "Param Label",
+      "paramLabelPlaceholder": "e.g. month_label",
+      "blocks": "Blocks",
+      "blockName": "Name",
+      "blockNamePlaceholder": "e.g. DataBlock1",
+      "headerBlockNamePlaceholder": "e.g. RowHeader",
+      "type": "Type",
+      "blockTypeValue": "Value",
+      "blockTypeMatrix": "Matrix",
+      "blockTypeNestedMatrix": "Matrix (nested)",
+      "rangeRef": "Range (ref)",
+      "rangeRefPlaceholder": "e.g. A1:B5",
+      "headerRangeRefPlaceholder": "e.g. A3:A3",
+      "dataViewOptional": "Data View (optional)",
+      "direction": "Direction",
+      "directionVertical": "Vertical",
+      "directionHorizontal": "Horizontal",
+      "directionPlaceholder": "(optional)",
+      "rowLimit": "Row Limit",
+      "rowLimitPlaceholder": "0 = no limit",
+      "insertAfter": "Insert After",
+      "template": "Template",
+      "rowHeader": "Row Header (vertical axis)",
+      "colHeader": "Column Header (horizontal axis)",
+      "dataBlocks": "Data Blocks",
+      "labelVariable": "Label Variable",
+      "selectLabel": "Select a label variable",
+      "chooseLabel": "Choose from existing label mappings",
+      "noLabelMappings": "No label mappings available yet. Configure labels in Data Setup first.",
+      "addBlock": "Add Block",
+      "addSheet": "Add Sheet",
+      "addDataBlock": "Add Data Block",
+      "defaultRowHeaderName": "RowHeader",
+      "defaultColHeaderName": "ColHeader",
+      "defaultDataBlockName": "Data",
+      "unnamedBlock": "Unnamed Block",
+      "sheetNumber": "Sheet {{number}}",
+      "templateCells": "Template cells"
+    },
+    "preview": {
+      "generatedYaml": "Generated YAML",
+      "copy": "Copy",
+      "download": "Download",
+      "files": "Files",
+      "template": "Template",
+      "noTemplate": "No template uploaded (go back to step 3)",
+      "dataFilesLabel": "Data files",
+      "noDataFiles": "No data files uploaded (go back to step 1)",
+      "missingDataFiles": "Missing Data Files",
+      "missingDesc": "Some data views do not have an uploaded CSV mapped to them. Go back to Step 1 or Step 2 and fix the mapping before generating.",
+      "generateReport": "Generate Report"
+    }
+  },
+  "messages": {
+    "downloadStarted": "Download started",
+    "yamlCopied": "YAML copied to clipboard",
+    "reportGenerated": "Report generated and downloaded!",
+    "uploadTemplateAndData": "Please upload both a template and data files",
+    "unknownError": "An unknown error occurred"
+  },
+  "common": {
+    "empty": "empty"
+  },
+  "templatePreview": {
+    "matched": "Matched to a label",
+    "unmatched": "No matching label in Step 2",
+    "noMatchingLabel": "No matching label defined in Step 2",
+    "labelMappings": "Label Mappings",
+    "unnamedDataView": "Unnamed Data View",
+    "noDataSource": "No data source",
+    "label": "Label",
+    "column": "Column",
+    "noLabelsConfigured": "No labels configured"
+  }
+}

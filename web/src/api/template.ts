@@ -9,9 +9,7 @@ export interface ParseTemplateResponse {
   sheets: ParsedSheet[];
 }
 
-export async function parseTemplate(
-  file: File,
-): Promise<ParseTemplateResponse> {
+export async function parseTemplate(file: File): Promise<ParseTemplateResponse> {
   const formData = new FormData();
   formData.append("template", file);
   const res = await fetch("/api/template/parse", {

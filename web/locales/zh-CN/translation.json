@@ -1,0 +1,186 @@
+{
+  "app": {
+    "title": "fibr-gen",
+    "subtitle": "基于模板和数据生成 Excel 报表"
+  },
+  "nav": {
+    "uploadFiles": "上传文件",
+    "buildConfig": "构建配置",
+    "docs": "文档",
+    "uploadFilesDesc": "直接上传您的配置 YAML、Excel 模板和 CSV 数据文件",
+    "buildConfigDesc": "通过分步向导交互式创建配置"
+  },
+  "generate": {
+    "title": "fibr-gen 报表生成器",
+    "steps": {
+      "upload": "上传",
+      "uploadDesc": "模板、配置和数据",
+      "review": "审核",
+      "reviewDesc": "验证文件和参数",
+      "result": "结果",
+      "resultDesc": "下载报表"
+    },
+    "alertTemporary": {
+      "title": "更改将不会保存",
+      "desc": "您在此处上传的文件和参数是临时的，不会被保存。在关闭此页面之前请下载您的报表。"
+    },
+    "buttons": {
+      "back": "上一步",
+      "next": "下一步",
+      "generateReport": "生成报表"
+    }
+  },
+  "upload": {
+    "configBundle": "配置包 (.yaml)",
+    "configBundleDesc": "点击或拖放您的配置 YAML 文件到此处",
+    "template": "模板 (.xlsx)",
+    "templateDesc": "点击或拖放您的 Excel 模板到此处",
+    "dataFiles": "数据文件 (.csv)",
+    "dataFilesDesc": "点击或拖放 CSV 数据文件到此处 (每个数据视图一个)"
+  },
+  "review": {
+    "config": "配置",
+    "template": "模板",
+    "dataFiles": "数据文件",
+    "notUploaded": "未上传",
+    "noFilesUploaded": "未上传文件",
+    "extraParams": "额外参数 (可选 JSON)",
+    "extraParamsPlaceholder": "{\"env\": \"prod\", \"archive_date\": \"2026-03-28\"}",
+    "invalidJson": "必须是有效的 JSON 对象"
+  },
+  "result": {
+    "generating": "正在生成报表...",
+    "generatingSubtitle": "这可能需要一些时间，取决于数据大小",
+    "failed": "生成失败",
+    "success": "报表已生成！",
+    "tryAgain": "重试",
+    "downloadReport": "下载报表",
+    "generateAnother": "生成另一个"
+  },
+  "builder": {
+    "title": "配置构建器",
+    "steps": {
+      "dataSetup": "数据设置",
+      "dataSetupDesc": "上传 CSV 并映射列",
+      "workbook": "工作簿",
+      "workbookDesc": "工作表和块",
+      "preview": "预览并生成",
+      "previewDesc": "审核 YAML"
+    },
+    "dataSources": {
+      "title": "数据源",
+      "titleDesc": "请先上传 CSV 文件，以便下一部分可以使用检测到的列。",
+      "csvFile": "CSV 文件",
+      "dropCsv": "拖放 CSV 文件到此处或点击浏览",
+      "columnsDetected": "检测到的列",
+      "name": "名称",
+      "namePlaceholder": "例如 local_csv (会自动从文件名填充)",
+      "nameRequired": "名称为必填项",
+      "addDataSource": "添加数据源"
+    },
+    "dataViews": {
+      "title": "数据视图",
+      "titleDesc": "在此处定义标签，以便工作簿配置可以在下一步中直接引用它们。",
+      "name": "名称",
+      "namePlaceholder": "例如 employee_view",
+      "dataSource": "数据源",
+      "selectDataSource": "选择数据源",
+      "labels": "标签 (列映射)",
+      "mapAllColumns": "映射所有列",
+      "labelName": "标签名称",
+      "columnName": "列名称",
+      "addLabel": "添加标签",
+      "addDataView": "添加数据视图"
+    },
+    "workbook": {
+      "settings": "工作簿设置",
+      "workbookName": "工作簿名称",
+      "workbookNamePlaceholder": "例如 Monthly Report",
+      "templateFile": "模板文件 (.xlsx)",
+      "dropTemplate": "拖放您的 Excel 模板到此处或点击浏览",
+      "parsing": "正在解析模板...",
+      "templatePreview": "模板预览",
+      "unmatchedPlaceholders": "未匹配的模板占位符",
+      "unmatchedDesc": "在继续之前，请在数据设置中添加这些标签的映射",
+      "headerLabelRequired": "需要标题标签变量",
+      "headerLabelDesc": "为每个已配置的标题块选择标签变量",
+      "sheets": "工作表",
+      "sheetName": "工作表名称",
+      "sheetNamePlaceholder": "例如 Sheet1",
+      "dynamic": "动态",
+      "dataView": "数据视图",
+      "paramLabel": "参数标签",
+      "paramLabelPlaceholder": "例如 month_label",
+      "blocks": "块",
+      "blockName": "名称",
+      "blockNamePlaceholder": "例如 DataBlock1",
+      "headerBlockNamePlaceholder": "例如 RowHeader",
+      "type": "类型",
+      "blockTypeValue": "值",
+      "blockTypeMatrix": "矩阵",
+      "blockTypeNestedMatrix": "矩阵（嵌套）",
+      "rangeRef": "范围 (ref)",
+      "rangeRefPlaceholder": "例如 A1:B5",
+      "headerRangeRefPlaceholder": "例如 A3:A3",
+      "dataViewOptional": "数据视图 (可选)",
+      "direction": "方向",
+      "directionVertical": "纵向",
+      "directionHorizontal": "横向",
+      "directionPlaceholder": " (可选)",
+      "rowLimit": "行数限制",
+      "rowLimitPlaceholder": "0 = 无限制",
+      "insertAfter": "之后插入",
+      "template": "模板",
+      "rowHeader": "行标题 (垂直轴)",
+      "colHeader": "列标题 (水平轴)",
+      "dataBlocks": "数据块",
+      "labelVariable": "标签变量",
+      "selectLabel": "选择标签变量",
+      "chooseLabel": "从现有标签映射中选择",
+      "noLabelMappings": "暂无可用的标签映射。请先在数据设置中配置标签。",
+      "addBlock": "添加块",
+      "addSheet": "添加工作表",
+      "addDataBlock": "添加数据块",
+      "defaultRowHeaderName": "行标题",
+      "defaultColHeaderName": "列标题",
+      "defaultDataBlockName": "数据",
+      "unnamedBlock": "未命名块",
+      "sheetNumber": "工作表 {{number}}",
+      "templateCells": "模板单元格"
+    },
+    "preview": {
+      "generatedYaml": "生成的 YAML",
+      "copy": "复制",
+      "download": "下载",
+      "files": "文件",
+      "template": "模板",
+      "noTemplate": "未上传模板 (返回第 3 步)",
+      "dataFilesLabel": "数据文件",
+      "noDataFiles": "未上传数据文件 (返回第 1 步)",
+      "missingDataFiles": "缺少数据文件",
+      "missingDesc": "某些数据视图没有映射上传的 CSV。请返回第 1 步或第 2 步修复映射后再生成。",
+      "generateReport": "生成报表"
+    }
+  },
+  "messages": {
+    "downloadStarted": "下载已开始",
+    "yamlCopied": "YAML 已复制到剪贴板",
+    "reportGenerated": "报表已生成并下载！",
+    "uploadTemplateAndData": "请同时上传模板和数据文件",
+    "unknownError": "发生未知错误"
+  },
+  "common": {
+    "empty": "空"
+  },
+  "templatePreview": {
+    "matched": "已匹配到标签",
+    "unmatched": "在第 2 步中没有匹配的标签",
+    "noMatchingLabel": "在第 2 步中未定义匹配的标签",
+    "labelMappings": "标签映射",
+    "unnamedDataView": "未命名数据视图",
+    "noDataSource": "无数据源",
+    "label": "标签",
+    "column": "列",
+    "noLabelsConfigured": "未配置标签"
+  }
+}

@@ -54,10 +54,7 @@ export function parseRangeRef(ref: string): RangeCoords | null {
 }
 
 /** Extract a sub-grid from rows for the given range string. Returns null if ref is invalid. */
-export function getCellsInRange(
-  rows: string[][],
-  rangeRef: string,
-): string[][] | null {
+export function getCellsInRange(rows: string[][], rangeRef: string): string[][] | null {
   const coords = parseRangeRef(rangeRef);
   if (!coords) return null;
   const { startRow, startCol, endRow, endCol } = coords;

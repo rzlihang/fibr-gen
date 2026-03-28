@@ -1,6 +1,7 @@
 import { Button, Card, Form, Input, Select, Space, Typography } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { snakeCase } from "lodash";
+import { useTranslation } from "react-i18next";
 import type { DataSourceDef, DataViewDef, LabelDef } from "../../lib/configTypes";
 
 const { Text } = Typography;
@@ -18,6 +19,8 @@ export default function DataViewStep({
   csvHeaders,
   onChange,
 }: DataViewStepProps) {
+  const { t } = useTranslation();
+
   const dsOptions = dataSources
     .filter((ds) => ds.name)
     .map((ds) => ({ label: ds.name, value: ds.name }));
@@ -42,12 +45,7 @@ export default function DataViewStep({
     onChange(next);
   };
 
-  const updateLabel = (
-    viewIdx: number,
-    labelIdx: number,
-    field: keyof LabelDef,
-    value: string,
-  ) => {
+  const updateLabel = (viewIdx: number, labelIdx: number, field: keyof LabelDef, value: string) => {
     const next = [...dataViews];
     const labels = [...next[viewIdx].labels];
     labels[labelIdx] = { ...labels[labelIdx], [field]: value };
@@ -56,10 +54,7 @@ export default function DataViewStep({
   };
 
   const addView = () => {
-    onChange([
-      ...dataViews,
-      { name: "", dataSource: "", labels: [{ name: "", column: "" }] },
-    ]);
+    onChange([...dataViews, { name: "", dataSource: "", labels: [{ name: "", column: "" }] }]);
   };
 
   const removeView = (index: number) => {
@@ -100,102 +95,94 @@ export default function DataViewStep({
         const columnOptions = headers.map((h) => ({ value: h }));
 
         return (
-        <Card
-          key={vIdx}
-          size="small"
-          title={`Data View ${vIdx + 1}`}
-          extra={
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => removeView(vIdx)}
-            />
-          }
-        >
-          <Form layout="vertical" size="small">
-            <Form.Item
-              label="Name"
-              required
-              validateStatus={dv.name ? "" : "error"}
-            >
-              <Input
-                placeholder="e.g. employee_view"
-                value={dv.name}
-                onChange={(e) => updateView(vIdx, "name", e.target.value)}
+          <Card
+            key={vIdx}
+            size="small"
+            title={`${t("builder.dataViews.title")} ${vIdx + 1}`}
+            extra={
+              <Button
+                type="text"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => removeView(vIdx)}
               />
-            </Form.Item>
-            <Form.Item
-              label="Data Source"
-              required
-              validateStatus={dv.dataSource ? "" : "error"}
-            >
-              <Select
-                placeholder="Select a data source"
-                options={dsOptions}
-                value={dv.dataSource || undefined}
-                onChange={(v) => handleDataSourceChange(vIdx, v)}
-              />
-            </Form.Item>
-
-            <div className="mb-2 flex items-center gap-2">
-              <Text strong>Labels (column mappings)</Text>
-              {headers.length > 0 && (
-                <Button
-                  type="link"
-                  size="small"
-                  onClick={() => mapAllColumns(vIdx, headers)}
-                >
-                  Map All Columns
-                </Button>
-              )}
-            </div>
-            {dv.labels.map((label, lIdx) => (
-              <Space key={lIdx} className="flex mb-2" align="start">
+            }
+          >
+            <Form layout="vertical" size="small">
+              <Form.Item
+                label={t("builder.dataViews.name")}
+                required
+                validateStatus={dv.name ? "" : "error"}
+              >
                 <Input
-                  placeholder="Label name"
-                  value={label.name}
-                  onChange={(e) =>
-                    updateLabel(vIdx, lIdx, "name", e.target.value)
-                  }
+                  placeholder={t("builder.dataViews.namePlaceholder")}
+                  value={dv.name}
+                  onChange={(e) => updateView(vIdx, "name", e.target.value)}
                 />
+              </Form.Item>
+              <Form.Item
+                label={t("builder.dataViews.dataSource")}
+                required
+                validateStatus={dv.dataSource ? "" : "error"}
+              >
                 <Select
-                  placeholder="Column name"
-                  value={label.column || undefined}
-                  options={columnOptions}
-                  onChange={(v) => updateLabel(vIdx, lIdx, "column", v)}
-                  showSearch
-                  filterOption={(input, option) =>
-                    (option?.value ?? "")
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
-                  style={{ width: 200 }}
+                  placeholder={t("builder.dataViews.selectDataSource")}
+                  options={dsOptions}
+                  value={dv.dataSource || undefined}
+                  onChange={(v) => handleDataSourceChange(vIdx, v)}
                 />
-                {dv.labels.length > 1 && (
-                  <Button
-                    type="text"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => removeLabel(vIdx, lIdx)}
-                  />
+              </Form.Item>
+
+              <div className="mb-2 flex items-center gap-2">
+                <Text strong>{t("builder.dataViews.labels")}</Text>
+                {headers.length > 0 && (
+                  <Button type="link" size="small" onClick={() => mapAllColumns(vIdx, headers)}>
+                    {t("builder.dataViews.mapAllColumns")}
+                  </Button>
                 )}
-              </Space>
-            ))}
-            <Button
-              type="dashed"
-              size="small"
-              icon={<PlusOutlined />}
-              onClick={() => addLabel(vIdx)}
-            >
-              Add Label
-            </Button>
-          </Form>
-        </Card>
+              </div>
+              {dv.labels.map((label, lIdx) => (
+                <Space key={lIdx} className="flex mb-2" align="start">
+                  <Input
+                    placeholder={t("builder.dataViews.labelName")}
+                    value={label.name}
+                    onChange={(e) => updateLabel(vIdx, lIdx, "name", e.target.value)}
+                  />
+                  <Select
+                    placeholder={t("builder.dataViews.columnName")}
+                    value={label.column || undefined}
+                    options={columnOptions}
+                    onChange={(v) => updateLabel(vIdx, lIdx, "column", v)}
+                    showSearch
+                    filterOption={(input, option) =>
+                      (option?.value ?? "").toLowerCase().includes(input.toLowerCase())
+                    }
+                    style={{ width: 200 }}
+                  />
+                  {dv.labels.length > 1 && (
+                    <Button
+                      type="text"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => removeLabel(vIdx, lIdx)}
+                    />
+                  )}
+                </Space>
+              ))}
+              <Button
+                type="dashed"
+                size="small"
+                icon={<PlusOutlined />}
+                onClick={() => addLabel(vIdx)}
+              >
+                {t("builder.dataViews.addLabel")}
+              </Button>
+            </Form>
+          </Card>
         );
       })}
       <Button type="dashed" icon={<PlusOutlined />} onClick={addView} block>
-        Add Data View
+        {t("builder.dataViews.addDataView")}
       </Button>
     </div>
   );

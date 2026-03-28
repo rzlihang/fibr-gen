@@ -3,6 +3,7 @@ import { Button, Steps } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router";
 import { useBeforeunload } from "react-beforeunload";
+import { useTranslation } from "react-i18next";
 import DataSourceStep from "../components/builder/DataSourceStep";
 import type { CsvMeta } from "../components/builder/DataSourceStep";
 import DataViewStep from "../components/builder/DataViewStep";
@@ -11,29 +12,17 @@ import YamlPreviewStep from "../components/builder/YamlPreviewStep";
 import type { PreparedDataFile } from "../components/builder/YamlPreviewStep";
 import { configToYaml } from "../lib/configToYaml";
 import type { ParseTemplateResponse } from "../api/template";
-import type {
-  BlockDef,
-  DataSourceDef,
-  DataViewDef,
-  WorkbookDef,
-} from "../lib/configTypes";
+import type { BlockDef, DataSourceDef, DataViewDef, WorkbookDef } from "../lib/configTypes";
 import { getTemplatePlaceholderStatus } from "../lib/templatePlaceholders";
 
-function collectHeaderLabelVariableIssues(
-  blocks: BlockDef[],
-  path: string[],
-): string[] {
+function collectHeaderLabelVariableIssues(blocks: BlockDef[], path: string[]): string[] {
   const issues: string[] = [];
 
   blocks.forEach((block) => {
     const blockName = block.name || "Unnamed Block";
     const nextPath = [...path, blockName];
 
-    if (
-      block.type === "header" &&
-      block.range.ref.trim() !== "" &&
-      !block.labelVariable?.trim()
-    ) {
+    if (block.type === "header" && block.range.ref.trim() !== "" && !block.labelVariable?.trim()) {
       issues.push(nextPath.join(" > "));
     }
 
@@ -55,20 +44,18 @@ const defaultWorkbook: WorkbookDef = {
 
 export default function ConfigBuilderPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [current, setCurrent] = useState(0);
   const [dataSources, setDataSources] = useState<DataSourceDef[]>([
     { name: "", driver: "csv", dsn: "local" },
   ]);
-  const [csvMeta, setCsvMeta] = useState<CsvMeta[]>([
-    { file: null, headers: [] },
-  ]);
+  const [csvMeta, setCsvMeta] = useState<CsvMeta[]>([{ file: null, headers: [] }]);
   const [dataViews, setDataViews] = useState<DataViewDef[]>([
     { name: "", dataSource: "", labels: [{ name: "", column: "" }] },
   ]);
   const [workbook, setWorkbook] = useState<WorkbookDef>(defaultWorkbook);
   const [templateFile, setTemplateFile] = useState<File | null>(null);
-  const [parsedTemplate, setParsedTemplate] =
-    useState<ParseTemplateResponse | null>(null);
+  const [parsedTemplate, setParsedTemplate] = useState<ParseTemplateResponse | null>(null);
 
   const csvHeaders = useMemo(() => {
     const map: Record<string, string[]> = {};
@@ -148,9 +135,7 @@ export default function ConfigBuilderPage() {
     [workbook],
   );
 
-  const canProceedFromDS = dataSources.some(
-    (ds) => ds.name && ds.driver && ds.dsn,
-  );
+  const canProceedFromDS = dataSources.some((ds) => ds.name && ds.driver && ds.dsn);
   const canProceedFromDV = dataViews.some(
     (dv) => dv.name && dv.dataSource && dv.labels.some((l) => l.name && l.column),
   );
@@ -166,9 +151,9 @@ export default function ConfigBuilderPage() {
     workbook.sheets.length > 0;
 
   const steps = [
-    { title: "Data Setup", description: "Upload CSVs & map columns" },
-    { title: "Workbook", description: "Sheets & blocks" },
-    { title: "Preview & Generate", description: "Review YAML" },
+    { title: t("builder.steps.dataSetup"), description: t("builder.steps.dataSetupDesc") },
+    { title: t("builder.steps.workbook"), description: t("builder.steps.workbookDesc") },
+    { title: t("builder.steps.preview"), description: t("builder.steps.previewDesc") },
   ];
 
   const canProceed = [canProceedFromDataSetup, canProceedFromWB, true];
@@ -208,13 +193,11 @@ export default function ConfigBuilderPage() {
     );
   }, [dataSources, csvMeta, dataViews, workbook, templateFile, parsedTemplate]);
 
-  useBeforeunload(
-    isDirty ? (event: BeforeUnloadEvent) => event.preventDefault() : undefined,
-  );
+  useBeforeunload(isDirty ? (event: BeforeUnloadEvent) => event.preventDefault() : undefined);
 
   const handleBackToHome = () => {
     if (!isDirty) {
-      navigate("/");
+      void navigate("/");
       return;
     }
 
@@ -224,12 +207,8 @@ export default function ConfigBuilderPage() {
   return (
     <div className="max-w-3xl mx-auto p-8">
       <div className="flex items-center gap-3 mb-6">
-        <Button
-          type="text"
-          icon={<ArrowLeftOutlined />}
-          onClick={handleBackToHome}
-        />
-        <h1 className="text-2xl font-semibold m-0">Config Builder</h1>
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={handleBackToHome} />
+        <h1 className="text-2xl font-semibold m-0">{t("builder.title")}</h1>
       </div>
 
       <Steps current={current} items={steps} className="mb-8" />
@@ -239,9 +218,9 @@ export default function ConfigBuilderPage() {
           <div className="flex flex-col gap-8">
             <section className="flex flex-col gap-4">
               <div>
-                <h2 className="text-lg font-medium m-0">Data Sources</h2>
+                <h2 className="text-lg font-medium m-0">{t("builder.dataSources.title")}</h2>
                 <p className="text-sm text-gray-500 mt-1 mb-0">
-                  Upload the CSV files first so the next section can use their detected columns.
+                  {t("builder.dataSources.titleDesc")}
                 </p>
               </div>
               <DataSourceStep
@@ -256,9 +235,9 @@ export default function ConfigBuilderPage() {
 
             <section className="flex flex-col gap-4">
               <div>
-                <h2 className="text-lg font-medium m-0">Data Views</h2>
+                <h2 className="text-lg font-medium m-0">{t("builder.dataViews.title")}</h2>
                 <p className="text-sm text-gray-500 mt-1 mb-0">
-                  Define the labels here so Workbook configuration can reference them directly in the next step.
+                  {t("builder.dataViews.titleDesc")}
                 </p>
               </div>
               <DataViewStep
@@ -294,11 +273,8 @@ export default function ConfigBuilderPage() {
 
       {current < steps.length && (
         <div className="flex justify-between mt-8">
-          <Button
-            disabled={current === 0}
-            onClick={() => setCurrent((c) => c - 1)}
-          >
-            Back
+          <Button disabled={current === 0} onClick={() => setCurrent((c) => c - 1)}>
+            {t("generate.buttons.back")}
           </Button>
           {current < steps.length - 1 && (
             <Button
@@ -306,7 +282,7 @@ export default function ConfigBuilderPage() {
               disabled={!canProceed[current]}
               onClick={() => setCurrent((c) => c + 1)}
             >
-              Next
+              {t("generate.buttons.next")}
             </Button>
           )}
         </div>

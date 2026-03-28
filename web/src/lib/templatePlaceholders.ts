@@ -13,9 +13,7 @@ export interface TemplatePlaceholderStatus {
   unmatched: string[];
 }
 
-export function extractPlaceholders(
-  rows: string[][],
-): Map<string, PlaceholderLocation[]> {
+export function extractPlaceholders(rows: string[][]): Map<string, PlaceholderLocation[]> {
   const map = new Map<string, PlaceholderLocation[]>();
   rows.forEach((row, ri) => {
     row.forEach((cell, ci) => {
