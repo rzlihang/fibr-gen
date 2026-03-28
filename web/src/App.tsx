@@ -11,7 +11,7 @@ function App() {
   return (
     <ConfigProvider>
       <BrowserRouter>
-        <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
           <a
             href="https://github.com/catduck2010/fibr-gen/blob/main/docs/guide.md"
             target="_blank"
