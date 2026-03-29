@@ -43,3 +43,6 @@ WARP.md
 *.local.*
 *.local/
 package-lock.json
+.github/copilot-instructions.md
+.gitignore
+.github/hooks/rtk-rewrite.json

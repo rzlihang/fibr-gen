@@ -13,7 +13,7 @@ function App() {
       <BrowserRouter>
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
           <a
-            href="https://github.com/catduck2010/fibr-gen/blob/main/docs/guide.md"
+            href="https://github.com/rzlihang/fibr-gen/blob/main/docs/guide.md"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
