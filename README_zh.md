@@ -1,6 +1,8 @@
 # fibr-gen
 
-**fibr-gen** 是一个基于 Excel 模板的灵活报表生成器。
+[日本語](README_ja.md) | [English](README.md)
+
+**fibr-gen** 是一个基于 Excel 模板的灵活报表生成器。体验[链接](https://fibr-gen-production.up.railway.app/)。
 
 项目名称 **fibr-gen** 取自 "**f**LEX**ib**LE **r**EPORT **gen**ERATOR" 的字母组合。
 

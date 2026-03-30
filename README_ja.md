@@ -1,6 +1,8 @@
 # fibr-gen
 
-**fibr-gen** は、Excelテンプレートに基づいた柔軟なレポート生成ツールです。
+[English](README.md) | [简体中文](README_zh.md)
+
+**fibr-gen** は、Excelテンプレートに基づいた柔軟なレポート生成ツールです。体験するには[こちらへ](https://fibr-gen-production.up.railway.app/)移行します。
 
 プロジェクト名 **fibr-gen** は、"**f**LEX**ib**LE **r**EPORT **gen**ERATOR"（柔軟なレポート生成器）に由来しています。
 

@@ -1,6 +1,8 @@
 # fibr-gen
 
-**fibr-gen** is a flexible report generator based on Excel templates.
+[日本語](README_ja.md) | [简体中文](README_zh.md)
+
+**fibr-gen** is a flexible report generator based on Excel templates. Try [here](https://fibr-gen-production.up.railway.app/).
 
 The name **fibr-gen** is derived from "**f**LEX**ib**LE **r**EPORT **gen**ERATOR".
 
