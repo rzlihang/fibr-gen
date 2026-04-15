@@ -121,3 +121,100 @@ func TestTemplateValidator_ValidConfig_NoErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestTemplateValidator_UnknownPlaceholder_Warns(t *testing.T) {
+	dir := t.TempDir()
+	makeTemplateFile(t, dir, "tpl.xlsx", "Sheet1", "A1", "{emp_name}")
+
+	wb := &config.WorkbookConfig{
+		Name:     "R",
+		Template: "tpl.xlsx",
+		Sheets: []config.SheetConfig{
+			{
+				Name: "Sheet1",
+				Blocks: []config.BlockConfig{
+					{Name: "b1", Type: config.BlockTypeValue, Range: config.CellRange{Ref: "A1"}},
+				},
+			},
+		},
+	}
+
+	tv := NewTemplateValidator(wb, map[string]*config.DataViewConfig{}, dir)
+	issues := tv.Validate()
+
+	found := false
+	for _, iss := range issues {
+		if iss.Level == IssueLevelWarn && iss.Category == "template" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected WARN [template] for unknown placeholder, got: %v", issues)
+	}
+}
+
+func TestTemplateValidator_UnusedLabel_Warns(t *testing.T) {
+	dir := t.TempDir()
+	makeTemplateFile(t, dir, "tpl.xlsx", "Sheet1", "A1", "static value")
+
+	wb := &config.WorkbookConfig{
+		Name:     "R",
+		Template: "tpl.xlsx",
+		Sheets: []config.SheetConfig{
+			{
+				Name: "Sheet1",
+				Blocks: []config.BlockConfig{
+					{Name: "b1", Type: config.BlockTypeValue, Range: config.CellRange{Ref: "A1"}},
+				},
+			},
+		},
+	}
+
+	views := map[string]*config.DataViewConfig{
+		"view1": {Name: "view1", Labels: []config.LabelConfig{{Name: "emp_name", Column: "name"}}},
+	}
+
+	tv := NewTemplateValidator(wb, views, dir)
+	issues := tv.Validate()
+
+	found := false
+	for _, iss := range issues {
+		if iss.Level == IssueLevelWarn && iss.Category == "config" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected WARN [config] for unused label, got: %v", issues)
+	}
+}
+
+func TestTemplateValidator_KnownPlaceholder_NoWarn(t *testing.T) {
+	dir := t.TempDir()
+	makeTemplateFile(t, dir, "tpl.xlsx", "Sheet1", "A1", "{emp_name}")
+
+	wb := &config.WorkbookConfig{
+		Name:     "R",
+		Template: "tpl.xlsx",
+		Sheets: []config.SheetConfig{
+			{
+				Name: "Sheet1",
+				Blocks: []config.BlockConfig{
+					{Name: "b1", Type: config.BlockTypeValue, Range: config.CellRange{Ref: "A1"}},
+				},
+			},
+		},
+	}
+
+	views := map[string]*config.DataViewConfig{
+		"view1": {Name: "view1", Labels: []config.LabelConfig{{Name: "emp_name", Column: "name"}}},
+	}
+
+	tv := NewTemplateValidator(wb, views, dir)
+	issues := tv.Validate()
+
+	for _, iss := range issues {
+		if iss.Level == IssueLevelWarn {
+			t.Errorf("unexpected WARN: %s", iss.Message)
+		}
+	}
+}

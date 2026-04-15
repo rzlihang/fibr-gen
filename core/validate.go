@@ -4,6 +4,7 @@ import (
 	"fibr-gen/config"
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/xuri/excelize/v2"
@@ -161,7 +162,27 @@ func cellsInRange(f *excelize.File, sheetName, ref string) map[string]string {
 	return result
 }
 
-// scanPlaceholders is completed in Task 4. Stub returns no issues.
+var placeholderRe = regexp.MustCompile(`\{([^{}]+)\}`)
+
 func (v *TemplateValidator) scanPlaceholders(f *excelize.File, sheetName, blockName, ref string, labelToViews map[string][]string, usedLabels map[string]bool) []ValidationIssue {
-	return nil
+	var issues []ValidationIssue
+	for cellRef, cellValue := range cellsInRange(f, sheetName, ref) {
+		for _, m := range placeholderRe.FindAllStringSubmatchIndex(cellValue, -1) {
+			// Skip ${param} style — parameter substitutions, not data labels
+			if m[0] > 0 && cellValue[m[0]-1] == '$' {
+				continue
+			}
+			labelName := cellValue[m[2]:m[3]]
+			if _, known := labelToViews[labelName]; known {
+				usedLabels[labelName] = true
+			} else {
+				issues = append(issues, ValidationIssue{
+					Level:    IssueLevelWarn,
+					Category: "template",
+					Message:  fmt.Sprintf("sheet %q cell %s: placeholder {%s} not found in any DataView", sheetName, cellRef, labelName),
+				})
+			}
+		}
+	}
+	return issues
 }
