@@ -91,3 +91,45 @@ dataSources:
 		t.Errorf("LoadConfigBundle() error = %v, want error containing 'unknown DataSource'", err)
 	}
 }
+
+func TestLoadConfigBundleRaw_SkipsValidation(t *testing.T) {
+	dir := t.TempDir()
+	// Config with intentionally empty DSN — strict loader rejects this
+	content := `
+workbook:
+  id: "wb1"
+  name: "Report"
+  template: "tpl.xlsx"
+  outputDir: "out"
+  sheets:
+    - name: "Sheet1"
+dataViews:
+  - name: "view1"
+    dataSource: "src1"
+    labels:
+      - name: "emp_name"
+        column: "name"
+dataSources:
+  - name: "src1"
+    driver: "mysql"
+    dsn: ""
+`
+	path := filepath.Join(dir, "bundle.yaml")
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	wb, views, sources, err := LoadConfigBundleRaw(path)
+	if err != nil {
+		t.Fatalf("LoadConfigBundleRaw() unexpected error: %v", err)
+	}
+	if wb.Name != "Report" {
+		t.Errorf("wb.Name = %q, want %q", wb.Name, "Report")
+	}
+	if _, ok := views["view1"]; !ok {
+		t.Error("expected view1 in views")
+	}
+	if _, ok := sources["src1"]; !ok {
+		t.Error("expected src1 in sources")
+	}
+}
